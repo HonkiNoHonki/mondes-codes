@@ -5,77 +5,102 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Mondes &amp; Codes — Chant &amp; Festin</title>
 <style>
-/* ===== Mondes & Codes — thème visuel v2 (2026-11-24) : nuit étoilée, cartes profondes, accents or & ciel. CSS seul, aucune logique touchée. ===== */
+/* ===== Mondes & Codes — thème visuel v3 (2026-11-24) : interface de jeu Pokémon d'après les maquettes GPT d'Axel.
+   Fond paysage ciel/herbe, cartes blanches à double bordure bleu nuit, rubans rouges à pastille Poké Ball,
+   boutons rouges/blancs à bordure épaisse. CSS seul (+ bannière d'accueil), aucune logique touchée. ===== */
   :root{
-    color-scheme:dark;
-    --bg:#0b0e1a; --carte:#1f2637; --carte2:#28324a;
-    --bord:rgba(255,255,255,.10); --txt:#f2f4fb; --doux:#a9b4cf; --accent:#f5c542; --accent2:#5ec8e6;
-    --ok:#57d977; --ko:#ff6b6b; --rayon:20px;
+    color-scheme:light;
+    --bg:#79c7f2; --carte:#fffef9; --carte2:#eef6ff;
+    --bord:#20304f; --txt:#1d2a44; --doux:#5a6b8c; --accent:#e3352b; --accent2:#1f7ac0;
+    --ok:#2e9e4f; --ko:#d92c2c; --rayon:18px; --jaune:#ffcb05;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
   html{background:var(--bg)}
   body{margin:0; color:var(--txt); font-family:-apple-system,'Segoe UI',Roboto,'Hiragino Sans',sans-serif; font-size:16px; min-height:100vh;
     background:
-      radial-gradient(560px 300px at 12% -60px, rgba(245,197,66,.16), transparent 65%),
-      radial-gradient(520px 300px at 95% -40px, rgba(94,200,230,.14), transparent 65%),
-      radial-gradient(700px 420px at 50% 115%, rgba(124,93,250,.12), transparent 65%),
-      linear-gradient(180deg,#0d1122 0%, #0b0e1a 55%, #0a0c16 100%);
+      radial-gradient(340px 130px at 8% 30px, rgba(255,255,255,.75), transparent 70%),
+      radial-gradient(420px 150px at 92% 90px, rgba(255,255,255,.6), transparent 70%),
+      linear-gradient(180deg,#4ea8e8 0%, #8fd0f7 26%, #cdeeb2 58%, #79bd57 82%, #57a047 100%);
     background-attachment:fixed}
-  .wrap{max-width:560px; margin:0 auto; padding:20px 14px 44px}
+  .wrap{max-width:560px; margin:0 auto; padding:14px 12px 44px}
   @keyframes montee{from{opacity:0; transform:translateY(7px)} to{opacity:1; transform:none}}
-  h1{font-size:30px; font-weight:800; letter-spacing:.3px; margin:10px 0 4px; text-align:center; color:#fff; text-shadow:0 2px 18px rgba(245,197,66,.25)}
-  .sous{text-align:center; color:var(--doux); margin:0 0 20px; font-size:14.5px; line-height:1.45}
-  .carte{background:linear-gradient(165deg,#242d49 0%, #1b2238 70%); border:1px solid var(--bord); border-radius:var(--rayon); padding:17px 16px; margin:13px 0;
-    box-shadow:0 12px 30px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.06); animation:montee .35s ease both}
+  .hero{display:block; width:100%; height:auto; border:3px solid var(--bord); border-radius:var(--rayon);
+    box-shadow:0 5px 0 rgba(32,48,79,.45), 0 14px 28px rgba(20,50,20,.28); margin:4px 0 14px}
+  h1{font-size:26px; font-weight:800; letter-spacing:.3px; margin:10px 0 14px; text-align:center; color:var(--txt);
+    background:var(--carte); border:3px solid var(--bord); border-radius:var(--rayon); padding:13px 12px;
+    box-shadow:0 4px 0 rgba(32,48,79,.45)}
+  .sous{text-align:center; color:var(--txt); margin:0 0 18px; font-size:14.5px; line-height:1.45; font-weight:600}
+  .carte{background:var(--carte); border:3px solid var(--bord); border-radius:var(--rayon); padding:16px 15px; margin:14px 0;
+    box-shadow:0 4px 0 rgba(32,48,79,.4), 0 12px 24px rgba(20,50,20,.20), inset 0 0 0 3px #fff; animation:montee .35s ease both}
   .carte h2{margin:0 0 10px; font-size:19px}
-  .carte h3{margin:0 0 9px; font-size:16.5px; letter-spacing:.2px}
-  label{display:block; font-size:12.5px; font-weight:600; letter-spacing:.4px; text-transform:uppercase; color:var(--doux); margin:13px 0 5px}
-  input[type=text], select, textarea{width:100%; background:#151b2e; border:1px solid rgba(255,255,255,.11); border-radius:12px; color:var(--txt); padding:12px; font-size:16px; font-family:inherit;
-    box-shadow:inset 0 2px 6px rgba(0,0,0,.35); transition:border-color .15s, box-shadow .15s}
-  input[type=text]:focus, select:focus, textarea:focus{outline:none; border-color:rgba(245,197,66,.65); box-shadow:0 0 0 3px rgba(245,197,66,.16), inset 0 2px 6px rgba(0,0,0,.35)}
+  .carte h3, #bloc-mes-mondes h3{margin:-16px -15px 13px; font-size:16.5px; letter-spacing:.3px; color:#fff;
+    background:linear-gradient(180deg,#f04438 0%, #d92c1f 70%); padding:10px 14px 10px 42px; position:relative;
+    border-bottom:3px solid var(--bord); border-radius:15px 15px 0 0; text-shadow:0 1px 2px rgba(0,0,0,.3)}
+  #bloc-mes-mondes h3{margin:0 0 12px; border:3px solid var(--bord); border-radius:13px}
+  .carte h3::before, #bloc-mes-mondes h3::before{content:""; position:absolute; left:11px; top:50%; width:21px; height:21px; margin-top:-11px;
+    border-radius:50%; border:2.5px solid var(--bord);
+    background:linear-gradient(180deg,#e3352b 0 44%, #20304f 44% 56%, #ffffff 56% 100%)}
+  .carte h3::after, #bloc-mes-mondes h3::after{content:""; position:absolute; left:17.5px; top:50%; width:8px; height:8px; margin-top:-4.5px;
+    border-radius:50%; background:#fff; border:2px solid var(--bord)}
+  label{display:block; font-size:12.5px; font-weight:700; letter-spacing:.4px; text-transform:uppercase; color:var(--doux); margin:13px 0 5px}
+  input[type=text], select, textarea{width:100%; background:#fff; border:2.5px solid var(--bord); border-radius:12px; color:var(--txt); padding:12px; font-size:16px; font-family:inherit;
+    box-shadow:inset 0 2px 5px rgba(32,48,79,.13); transition:border-color .15s, box-shadow .15s}
+  input[type=text]:focus, select:focus, textarea:focus{outline:none; border-color:#b8860b; box-shadow:0 0 0 3px rgba(255,203,5,.55), inset 0 2px 5px rgba(32,48,79,.13)}
   textarea{min-height:84px; resize:vertical; line-height:1.5}
   select{appearance:none; -webkit-appearance:none; padding-right:34px;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23a9b4cf' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%2320304f' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat:no-repeat; background-position:right 12px center}
-  .btn{display:block; width:100%; border:none; border-radius:14px; padding:15px 14px; font-size:17px; font-weight:700; cursor:pointer; margin:10px 0; font-family:inherit;
-    transition:transform .08s, box-shadow .15s, filter .15s}
-  .btn:active{transform:translateY(1px) scale(.995)}
-  .btn-or{background:linear-gradient(180deg,#ffd968 0%, #f2ba2e 60%, #eaaf14 100%); color:#2a1e00; border:1px solid rgba(255,255,255,.35);
-    box-shadow:0 8px 22px rgba(245,197,66,.32), inset 0 1px 0 rgba(255,255,255,.55)}
-  .btn-bleu{background:linear-gradient(180deg,#82dcf5 0%, #45b9dd 60%, #2ea3cc 100%); color:#04222e; border:1px solid rgba(255,255,255,.35);
-    box-shadow:0 8px 22px rgba(94,200,230,.28), inset 0 1px 0 rgba(255,255,255,.55)}
-  .btn-fantome{background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.15); color:var(--txt); font-weight:600; box-shadow:none}
-  .btn-petit{width:auto; display:inline-block; padding:8px 14px; font-size:14px; margin:4px 4px 4px 0; border-radius:11px}
+  .btn{display:block; width:100%; border:3px solid var(--bord); border-radius:14px; padding:14px 14px; font-size:17px; font-weight:800; cursor:pointer; margin:10px 0; font-family:inherit;
+    box-shadow:0 4px 0 var(--bord); transition:transform .08s, box-shadow .15s, filter .15s}
+  .btn:active{transform:translateY(3px); box-shadow:0 1px 0 var(--bord)}
+  .btn-or{background:linear-gradient(180deg,#f2503f 0%, #dd2c1c 70%); color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.3)}
+  .btn-bleu{background:linear-gradient(180deg,#ffffff 0%, #eef3fb 100%); color:var(--txt)}
+  .btn-fantome{background:#fff; border:2.5px solid var(--bord); color:var(--txt); font-weight:700; box-shadow:0 3px 0 rgba(32,48,79,.6)}
+  .btn-petit{width:auto; display:inline-block; padding:8px 14px; font-size:14px; margin:4px 4px 4px 0; border-radius:11px; border-width:2.5px}
   .btn:disabled{opacity:.45; cursor:default}
-  .code-gros{font-size:38px; font-weight:800; letter-spacing:4px; text-align:center; margin:10px 0; padding:16px 8px;
-    background:rgba(245,197,66,.07); border:1.5px dashed rgba(245,197,66,.5); border-radius:16px;
-    background-clip:padding-box; color:var(--accent); text-shadow:0 2px 16px rgba(245,197,66,.35)}
-  .pastille{display:inline-block; background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.13); border-radius:999px; padding:5px 12px; font-size:13px; margin:2px 3px 2px 0}
-  .pastille.ok{border-color:rgba(87,217,119,.6); color:var(--ok); background:rgba(87,217,119,.08)}
+  .code-gros{font-size:38px; font-weight:800; letter-spacing:4px; text-align:center; margin:12px 0; padding:18px 8px;
+    background:#fff6d8; border:3px dashed var(--accent); border-radius:14px; color:var(--txt)}
+  .pastille{display:inline-block; background:#fff; border:2px solid var(--bord); border-radius:999px; padding:5px 12px; font-size:13px; font-weight:600; margin:2px 3px 2px 0}
+  .pastille.ok{border-color:var(--ok); color:#176b31; background:#e4f7e9}
   .pastille.attente{color:var(--doux)}
-  .annonce{background:linear-gradient(160deg,#293350,#222b45); border:1px solid rgba(255,255,255,.07); border-left:3.5px solid var(--accent2); border-radius:12px; padding:11px 13px; margin:8px 0;
-    box-shadow:0 4px 14px rgba(0,0,0,.25)}
-  .annonce .qui{font-weight:700; font-size:14px; margin-bottom:3px; color:#cfe9f7}
-  .resolution{background:linear-gradient(165deg,#2a3719 0%, #1e2a12 75%); border:1px solid #57682f; border-left:3.5px solid var(--accent); border-radius:14px; padding:13px 14px; margin:9px 0;
-    white-space:pre-wrap; line-height:1.55; box-shadow:0 6px 18px rgba(0,0,0,.3)}
+  .annonce{background:var(--carte2); border:2px solid #b9d2ea; border-left:5px solid var(--accent); border-radius:12px; padding:11px 13px; margin:8px 0}
+  .annonce .qui{font-weight:800; font-size:14px; margin-bottom:3px; color:var(--txt)}
+  .resolution{background:#fffbe9; border:2px solid #d9c98a; border-left:5px solid var(--jaune); border-radius:12px; padding:13px 14px; margin:9px 0;
+    white-space:pre-wrap; line-height:1.55}
   .resolution .rtitre{font-weight:800; color:var(--accent); margin-bottom:6px; letter-spacing:.3px}
-  .des-bloc{font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:12.5px; color:var(--doux); background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.06); border-radius:9px; padding:8px 10px; margin-top:9px; white-space:pre-wrap; line-height:1.5}
+  .des-bloc{font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:12.5px; color:var(--doux); background:#fff; border:1.5px dashed #9db2d4; border-radius:9px; padding:8px 10px; margin-top:9px; white-space:pre-wrap; line-height:1.5}
   .charte{font-size:13px; color:var(--doux); line-height:1.5}
   .charte ul{margin:6px 0 0; padding-left:18px}
   .charte li{margin:3px 0}
   .charte summary{cursor:pointer; color:var(--txt)}
   .note{font-size:13px; color:var(--doux); line-height:1.45}
-  .alerte{background:linear-gradient(160deg,#42320f,#33270d); border:1px solid #9a761f; border-radius:12px; padding:11px 13px; font-size:14px; margin:10px 0}
-  .erreur{background:linear-gradient(160deg,#472020,#381818); border:1px solid #9a4444; border-radius:12px; padding:11px 13px; font-size:14px; margin:10px 0; display:none}
+  #ecran-accueil > .note{color:#173d17; font-weight:600}
+  .alerte{background:#fff3bf; border:2.5px solid #b8860b; border-radius:12px; padding:11px 13px; font-size:14px; margin:10px 0; color:#5c4300}
+  .erreur{background:#ffe3e0; border:2.5px solid var(--ko); border-radius:12px; padding:11px 13px; font-size:14px; margin:10px 0; display:none; color:#7a1410}
   .cache{display:none !important}
   .rangee{display:flex; gap:8px}
   .rangee > *{flex:1}
   .entete-monde{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;
-    background:linear-gradient(150deg, rgba(245,197,66,.14), rgba(94,200,230,.10) 55%, rgba(124,93,250,.10)); border:1px solid rgba(255,255,255,.12); border-radius:var(--rayon);
-    padding:15px 15px 13px; margin-bottom:13px; box-shadow:0 10px 26px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08)}
+    background:var(--carte); border:3px solid var(--bord); border-top:10px solid var(--accent); border-radius:var(--rayon);
+    padding:13px 15px; margin-bottom:12px; box-shadow:0 4px 0 rgba(32,48,79,.4)}
   .entete-monde h2{margin:0; font-size:22px; line-height:1.25}
-  .lien{color:var(--accent2); word-break:break-all; font-size:13px}
-  .separateur{border:none; border-top:1px solid rgba(255,255,255,.09); margin:16px 0}
+  .lien{color:var(--accent2); word-break:break-all; font-size:13px; font-weight:600}
+  .separateur{border:none; border-top:2px solid rgba(32,48,79,.18); margin:16px 0}
+
+  .equipe-grille{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+  .poke-case{background:#fff; border:2.5px solid var(--bord); border-radius:12px; padding:8px 9px; display:flex; gap:8px; align-items:center; min-height:64px}
+  .poke-case.vide{border-style:dashed; border-color:#9db2d4; color:var(--doux); justify-content:center; text-align:center; font-size:12.5px; font-weight:600}
+  .poke-icone{flex:0 0 40px; width:40px; height:40px; border-radius:50%; border:2.5px solid var(--bord);
+    background:linear-gradient(180deg,#e3352b 0 44%, #20304f 44% 56%, #ffffff 56% 100%); position:relative; overflow:hidden}
+  .poke-icone img{width:100%; height:100%; object-fit:contain; background:#eef6ff; display:block}
+  .poke-infos{flex:1; min-width:0}
+  .poke-nom{font-weight:800; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .poke-niv{font-size:12px; color:var(--doux); font-weight:700}
+  .pv-barre{height:9px; border:2px solid var(--bord); border-radius:99px; background:#e6e6e6; overflow:hidden; margin-top:4px}
+  .pv-remplissage{height:100%; background:#43c94e}
+  .pv-remplissage.moyen{background:#f5c542}
+  .pv-remplissage.bas{background:#e3352b}
+  .pv-txt{font-size:11.5px; color:var(--doux); font-weight:700; text-align:right}
   @media (prefers-reduced-motion: reduce){ .carte{animation:none} .btn{transition:none} }
 </style>
 </head>
@@ -84,8 +109,9 @@
 
   <!-- ===== ACCUEIL ===== -->
   <section id="ecran-accueil">
-    <h1>🌍 <span data-i18n="app_titre">Mondes &amp; Codes</span></h1>
-    <p class="sous" data-i18n="app_sous">Chant &amp; Festin entre amis — un monde, un code, une aventure.</p>
+    <img class="hero" src="hero-accueil.jpg" alt="Mondes &amp; Codes — Une aventure entre amis, un monde, un code, une histoire" onerror="this.style.display='none';document.getElementById('titre-accueil').style.display='block';document.getElementById('sous-accueil').style.display='block'">
+    <h1 id="titre-accueil" style="display:none">🌍 <span data-i18n="app_titre">Mondes &amp; Codes</span></h1>
+    <p id="sous-accueil" style="display:none" class="sous" data-i18n="app_sous">Chant &amp; Festin entre amis — un monde, un code, une aventure.</p>
     <div id="bandeau-local" class="alerte cache" data-i18n="bandeau_local">Mode démo local : la partie vit sur cet appareil (la synchro entre téléphones arrive avec le projet Supabase dédié).</div>
     <button class="btn btn-or" id="btn-vers-creer" data-i18n="btn_creer">✨ Créer un monde</button>
     <button class="btn btn-bleu" id="btn-vers-rejoindre" data-i18n="btn_rejoindre">🔑 Rejoindre avec un code</button>
@@ -181,6 +207,11 @@
       <div id="m-joueurs"></div>
     </div>
 
+    <div class="carte" id="bloc-equipe">
+      <h3 data-i18n="equipe_titre">Équipe</h3>
+      <div id="m-equipe"></div>
+    </div>
+
     <div class="carte" id="bloc-annonce">
       <h3><span data-i18n="ton_annonce">Ton annonce — tour</span> <span id="a-tour"></span></h3>
       <textarea id="a-texte" maxlength="1200" data-i18n-ph="annonce_ph" placeholder="Que fais-tu ce tour-ci ?"></textarea>
@@ -249,8 +280,8 @@ const LANGUES = [
 ];
 
 const I18N = {
-fr:{app_titre:'Mondes & Codes',app_sous:'Chant & Festin entre amis — un monde, un code, une aventure.',bandeau_local:'Mode démo local : la partie vit sur cet appareil (la synchro entre téléphones arrive avec le projet Supabase dédié).',btn_creer:'✨ Créer un monde',btn_rejoindre:'🔑 Rejoindre avec un code',mes_mondes:'Mes mondes sur cet appareil',creer_titre:'Créer un monde',lbl_nom_campagne:'Nom de la campagne',lbl_region:'Région de départ (saison 1)',lbl_mode:'Mode',lbl_max:'Nombre de joueurs max',lbl_ton:'Ton du monde',lbl_langue_defaut:'Langue par défaut du monde',ton_perso:"Toi, l'hôte",lbl_nom_dresseur:'Ton nom de dresseur',lbl_ta_langue:'Ta langue',btn_creer_monde:'Créer le monde',btn_retour:'← Retour',code_titre:'Ton monde est prêt !',code_explique:'Donne ce code à tes amis : ils ouvrent l\u2019app, « Rejoindre », tapent le code, et ils sont dans la partie.',lien_invitation:'Lien d\u2019invitation :',btn_entrer:'Entrer dans le monde →',rejoindre_titre:'Rejoindre un monde',lbl_code:'Code du monde',lbl_nom_dresseur2:'Ton nom de dresseur',lbl_ta_langue2:'Ta langue',btn_rejoindre_monde:'Rejoindre',btn_retour2:'← Retour',btn_quitter:'Quitter',joueurs_titre:'Dresseurs',ton_annonce:'Ton annonce — tour',annonce_ph:'Que fais-tu ce tour-ci ?',btn_poster:'📣 Poster mon annonce',annonces_titre:'Annonces du tour',hote_titre:"🎲 Panneau de l'hôte — MJ manuel (Phase 1)",lbl_resolution:'Résolution du tour',btn_resoudre:'✔ Résoudre le tour et passer au suivant',btn_archiver:'Archiver le monde',journal_titre:'📖 Journal des résolutions',btn_rafraichir:'↻ Rafraîchir',tour_n:'Tour',a_annonce:'a annoncé',en_attente:'en attente',aucune_annonce:'Aucune annonce pour le moment.',aucune_resolution:'Aucune résolution pour le moment.',tour_complet:'✅ Tour complet : tout le monde a annoncé, tu peux résoudre.',tour_incomplet:'⏳ Annonces en cours…',hote_badge:'hôte',toi:'toi',erreur_nom_vide:'Écris un nom de campagne et ton nom de dresseur.',erreur_code_vide:'Écris le code du monde et ton nom de dresseur.',erreur_code_inconnu:'Code inconnu : aucun monde ne porte ce code.',erreur_monde_plein:'Ce monde est plein.',erreur_nom_pris:'Ce nom de dresseur est déjà pris dans ce monde.',erreur_reseau:'Connexion impossible pour le moment.',annonce_postee:'Annonce postée ✔ — tu peux la modifier tant que le tour n\u2019est pas résolu.',annonce_vide:'Écris d\u2019abord ton annonce.',resolution_vide:'Écris d\u2019abord la résolution.',confirme_incomplet:'Le tour n\u2019est pas complet. Résoudre quand même ?',pause:'⏸ Mettre en pause',reprendre:'▶ Reprendre',monde_en_pause:'⏸ Ce monde est en pause.',monde_archive_msg:'🗄 Ce monde est archivé (lecture seule).',solo_note:'Mode solo : le rival IA arrive en Phase 2 — pour l\u2019instant, l\u2019hôte résout seul.',region:'Région',saison:'Saison',ton_leger:'Léger',ton_sombre:'Sombre',lbl_des:'Déroulé des dés (optionnel — affiché en petit, après le récit)',des_ph:'Un jet par ligne : Axel — face 14 +1 = 15 NETTE',charte_titre:'📜 Charte du MJ (§13 du plan)',charte_1:'Rythme : aucun arc sans bascule au bout de quelques tours.',charte_2:'Porte fermée : annonce-la dans la résolution du même tour.',charte_3:'Chance unique : signale-la avant l\u2019action des joueurs.',charte_4:'Rareté : donne toujours sa fréquence (une fois par an, saisonnier, récurrent, jamais), via un PNJ ou le narrateur, avant les tentatives.',charte_5:'Contexte : énonce les règles du monde avant que les joueurs dépensent leurs tours.',charte_6:'Pas de fil fantôme : aucun fil de plusieurs tours autour de qui ne rejoindra jamais le groupe.'},
-en:{app_titre:'Worlds & Codes',app_sous:'Chant & Festin with friends — one world, one code, one adventure.',bandeau_local:'Local demo mode: the game lives on this device (cross-phone sync comes with the dedicated Supabase project).',btn_creer:'✨ Create a world',btn_rejoindre:'🔑 Join with a code',mes_mondes:'My worlds on this device',creer_titre:'Create a world',lbl_nom_campagne:'Campaign name',lbl_region:'Starting region (season 1)',lbl_mode:'Mode',lbl_max:'Max players',lbl_ton:'World tone',lbl_langue_defaut:'World default language',ton_perso:'You, the host',lbl_nom_dresseur:'Your trainer name',lbl_ta_langue:'Your language',btn_creer_monde:'Create the world',btn_retour:'← Back',code_titre:'Your world is ready!',code_explique:'Give this code to your friends: they open the app, tap “Join”, enter the code, and they are in.',lien_invitation:'Invite link:',btn_entrer:'Enter the world →',rejoindre_titre:'Join a world',lbl_code:'World code',lbl_nom_dresseur2:'Your trainer name',lbl_ta_langue2:'Your language',btn_rejoindre_monde:'Join',btn_retour2:'← Back',btn_quitter:'Leave',joueurs_titre:'Trainers',ton_annonce:'Your announcement — turn',annonce_ph:'What do you do this turn?',btn_poster:'📣 Post my announcement',annonces_titre:'This turn\u2019s announcements',hote_titre:'🎲 Host panel — manual GM (Phase 1)',lbl_resolution:'Turn resolution',btn_resoudre:'✔ Resolve the turn and move on',btn_archiver:'Archive the world',journal_titre:'📖 Resolution journal',btn_rafraichir:'↻ Refresh',tour_n:'Turn',a_annonce:'has announced',en_attente:'waiting',aucune_annonce:'No announcements yet.',aucune_resolution:'No resolutions yet.',tour_complet:'✅ Turn complete: everyone has announced, you can resolve.',tour_incomplet:'⏳ Announcements in progress…',hote_badge:'host',toi:'you',erreur_nom_vide:'Enter a campaign name and your trainer name.',erreur_code_vide:'Enter the world code and your trainer name.',erreur_code_inconnu:'Unknown code: no world has this code.',erreur_monde_plein:'This world is full.',erreur_nom_pris:'That trainer name is already taken in this world.',erreur_reseau:'Connection failed for now.',annonce_postee:'Announcement posted ✔ — you can edit it until the turn is resolved.',annonce_vide:'Write your announcement first.',resolution_vide:'Write the resolution first.',confirme_incomplet:'The turn is not complete. Resolve anyway?',pause:'⏸ Pause',reprendre:'▶ Resume',monde_en_pause:'⏸ This world is paused.',monde_archive_msg:'🗄 This world is archived (read-only).',solo_note:'Solo mode: the AI rival arrives in Phase 2 — for now, the host resolves alone.',region:'Region',saison:'Season',ton_leger:'Light',ton_sombre:'Dark',lbl_des:'Dice log (optional — shown small, after the story)',des_ph:'One roll per line: Axel — face 14 +1 = 15 CLEAN SUCCESS',charte_titre:'📜 GM charter (plan §13)',charte_1:'Pacing: no arc without a turning point after a few turns.',charte_2:'Closed door: announce it in the same turn\u2019s resolution.',charte_3:'One-time chance: flag it before the players act.',charte_4:'Rarity: always give its frequency (once a year, seasonal, recurring, never), via an NPC or the narrator, before attempts.',charte_5:'Context: state the world\u2019s rules before players spend turns on them.',charte_6:'No ghost thread: no multi-turn thread around someone who will never join the group.'}
+fr:{app_titre:'Mondes & Codes',app_sous:'Chant & Festin entre amis — un monde, un code, une aventure.',bandeau_local:'Mode démo local : la partie vit sur cet appareil (la synchro entre téléphones arrive avec le projet Supabase dédié).',btn_creer:'✨ Créer un monde',btn_rejoindre:'🔑 Rejoindre avec un code',mes_mondes:'Mes mondes sur cet appareil',creer_titre:'Créer un monde',lbl_nom_campagne:'Nom de la campagne',lbl_region:'Région de départ (saison 1)',lbl_mode:'Mode',lbl_max:'Nombre de joueurs max',lbl_ton:'Ton du monde',lbl_langue_defaut:'Langue par défaut du monde',ton_perso:"Toi, l'hôte",lbl_nom_dresseur:'Ton nom de dresseur',lbl_ta_langue:'Ta langue',btn_creer_monde:'Créer le monde',btn_retour:'← Retour',code_titre:'Ton monde est prêt !',code_explique:'Donne ce code à tes amis : ils ouvrent l\u2019app, « Rejoindre », tapent le code, et ils sont dans la partie.',lien_invitation:'Lien d\u2019invitation :',btn_entrer:'Entrer dans le monde →',rejoindre_titre:'Rejoindre un monde',lbl_code:'Code du monde',lbl_nom_dresseur2:'Ton nom de dresseur',lbl_ta_langue2:'Ta langue',btn_rejoindre_monde:'Rejoindre',btn_retour2:'← Retour',btn_quitter:'Quitter',joueurs_titre:'Dresseurs',equipe_titre:'Équipe',equipe_vide:'Aucun Pokémon pour le moment — ton équipe apparaîtra ici automatiquement dès que ton premier Pokémon te rejoindra.',emplacement_vide:'Emplacement vide',ton_annonce:'Ton annonce — tour',annonce_ph:'Que fais-tu ce tour-ci ?',btn_poster:'📣 Poster mon annonce',annonces_titre:'Annonces du tour',hote_titre:"🎲 Panneau de l'hôte — MJ manuel (Phase 1)",lbl_resolution:'Résolution du tour',btn_resoudre:'✔ Résoudre le tour et passer au suivant',btn_archiver:'Archiver le monde',journal_titre:'📖 Journal des résolutions',btn_rafraichir:'↻ Rafraîchir',tour_n:'Tour',a_annonce:'a annoncé',en_attente:'en attente',aucune_annonce:'Aucune annonce pour le moment.',aucune_resolution:'Aucune résolution pour le moment.',tour_complet:'✅ Tour complet : tout le monde a annoncé, tu peux résoudre.',tour_incomplet:'⏳ Annonces en cours…',hote_badge:'hôte',toi:'toi',erreur_nom_vide:'Écris un nom de campagne et ton nom de dresseur.',erreur_code_vide:'Écris le code du monde et ton nom de dresseur.',erreur_code_inconnu:'Code inconnu : aucun monde ne porte ce code.',erreur_monde_plein:'Ce monde est plein.',erreur_nom_pris:'Ce nom de dresseur est déjà pris dans ce monde.',erreur_reseau:'Connexion impossible pour le moment.',annonce_postee:'Annonce postée ✔ — tu peux la modifier tant que le tour n\u2019est pas résolu.',annonce_vide:'Écris d\u2019abord ton annonce.',resolution_vide:'Écris d\u2019abord la résolution.',confirme_incomplet:'Le tour n\u2019est pas complet. Résoudre quand même ?',pause:'⏸ Mettre en pause',reprendre:'▶ Reprendre',monde_en_pause:'⏸ Ce monde est en pause.',monde_archive_msg:'🗄 Ce monde est archivé (lecture seule).',solo_note:'Mode solo : le rival IA arrive en Phase 2 — pour l\u2019instant, l\u2019hôte résout seul.',region:'Région',saison:'Saison',ton_leger:'Léger',ton_sombre:'Sombre',lbl_des:'Déroulé des dés (optionnel — affiché en petit, après le récit)',des_ph:'Un jet par ligne : Axel — face 14 +1 = 15 NETTE',charte_titre:'📜 Charte du MJ (§13 du plan)',charte_1:'Rythme : aucun arc sans bascule au bout de quelques tours.',charte_2:'Porte fermée : annonce-la dans la résolution du même tour.',charte_3:'Chance unique : signale-la avant l\u2019action des joueurs.',charte_4:'Rareté : donne toujours sa fréquence (une fois par an, saisonnier, récurrent, jamais), via un PNJ ou le narrateur, avant les tentatives.',charte_5:'Contexte : énonce les règles du monde avant que les joueurs dépensent leurs tours.',charte_6:'Pas de fil fantôme : aucun fil de plusieurs tours autour de qui ne rejoindra jamais le groupe.'},
+en:{app_titre:'Worlds & Codes',app_sous:'Chant & Festin with friends — one world, one code, one adventure.',bandeau_local:'Local demo mode: the game lives on this device (cross-phone sync comes with the dedicated Supabase project).',btn_creer:'✨ Create a world',btn_rejoindre:'🔑 Join with a code',mes_mondes:'My worlds on this device',creer_titre:'Create a world',lbl_nom_campagne:'Campaign name',lbl_region:'Starting region (season 1)',lbl_mode:'Mode',lbl_max:'Max players',lbl_ton:'World tone',lbl_langue_defaut:'World default language',ton_perso:'You, the host',lbl_nom_dresseur:'Your trainer name',lbl_ta_langue:'Your language',btn_creer_monde:'Create the world',btn_retour:'← Back',code_titre:'Your world is ready!',code_explique:'Give this code to your friends: they open the app, tap “Join”, enter the code, and they are in.',lien_invitation:'Invite link:',btn_entrer:'Enter the world →',rejoindre_titre:'Join a world',lbl_code:'World code',lbl_nom_dresseur2:'Your trainer name',lbl_ta_langue2:'Your language',btn_rejoindre_monde:'Join',btn_retour2:'← Back',btn_quitter:'Leave',joueurs_titre:'Trainers',equipe_titre:'Team',equipe_vide:'No Pokémon yet — your team will appear here automatically as soon as your first Pokémon joins you.',emplacement_vide:'Empty slot',ton_annonce:'Your announcement — turn',annonce_ph:'What do you do this turn?',btn_poster:'📣 Post my announcement',annonces_titre:'This turn\u2019s announcements',hote_titre:'🎲 Host panel — manual GM (Phase 1)',lbl_resolution:'Turn resolution',btn_resoudre:'✔ Resolve the turn and move on',btn_archiver:'Archive the world',journal_titre:'📖 Resolution journal',btn_rafraichir:'↻ Refresh',tour_n:'Turn',a_annonce:'has announced',en_attente:'waiting',aucune_annonce:'No announcements yet.',aucune_resolution:'No resolutions yet.',tour_complet:'✅ Turn complete: everyone has announced, you can resolve.',tour_incomplet:'⏳ Announcements in progress…',hote_badge:'host',toi:'you',erreur_nom_vide:'Enter a campaign name and your trainer name.',erreur_code_vide:'Enter the world code and your trainer name.',erreur_code_inconnu:'Unknown code: no world has this code.',erreur_monde_plein:'This world is full.',erreur_nom_pris:'That trainer name is already taken in this world.',erreur_reseau:'Connection failed for now.',annonce_postee:'Announcement posted ✔ — you can edit it until the turn is resolved.',annonce_vide:'Write your announcement first.',resolution_vide:'Write the resolution first.',confirme_incomplet:'The turn is not complete. Resolve anyway?',pause:'⏸ Pause',reprendre:'▶ Resume',monde_en_pause:'⏸ This world is paused.',monde_archive_msg:'🗄 This world is archived (read-only).',solo_note:'Solo mode: the AI rival arrives in Phase 2 — for now, the host resolves alone.',region:'Region',saison:'Season',ton_leger:'Light',ton_sombre:'Dark',lbl_des:'Dice log (optional — shown small, after the story)',des_ph:'One roll per line: Axel — face 14 +1 = 15 CLEAN SUCCESS',charte_titre:'📜 GM charter (plan §13)',charte_1:'Pacing: no arc without a turning point after a few turns.',charte_2:'Closed door: announce it in the same turn\u2019s resolution.',charte_3:'One-time chance: flag it before the players act.',charte_4:'Rarity: always give its frequency (once a year, seasonal, recurring, never), via an NPC or the narrator, before attempts.',charte_5:'Context: state the world\u2019s rules before players spend turns on them.',charte_6:'No ghost thread: no multi-turn thread around someone who will never join the group.'}
 };
 let uiLang = localStorage.getItem('mc_ui_lang') || 'fr';
 function t(cle){ const d = I18N[uiLang] || I18N.fr; return d[cle] || I18N.fr[cle] || cle; }
@@ -448,6 +479,57 @@ async function rafraichirMonde(silencieux){
     rendreMonde(joueurs, annonces, resolutions);
   }catch(e){ if(!silencieux) console.warn(e); }
 }
+/* ---------- équipe (maquette 3) : panneau prêt dès la Phase 1, remplissage automatique ----------
+   Source, par ordre : 1) champ equipe/pokemons porté par la ligne joueur (future base),
+   2) réserve locale mc_equipes {code: {joueur_id: [ {nom, niveau, pv, pv_max, sprite?, sexe?} ]}}.
+   La Phase 2 (ou tout futur code) n'a qu'à écrire l'une de ces deux sources — ou appeler
+   window.MC_setEquipe(code, joueurId, equipe) — et le panneau se remplit tout seul au rafraîchissement. */
+function equipesLocalesLire(){ try{ return JSON.parse(localStorage.getItem('mc_equipes')||'{}'); }catch(e){ return {}; } }
+function equipeDe(joueur){
+  if(!joueur) return [];
+  if(Array.isArray(joueur.equipe)) return joueur.equipe;
+  if(Array.isArray(joueur.pokemons)) return joueur.pokemons;
+  const toutes = equipesLocalesLire();
+  const duMonde = toutes[mondeCourant ? mondeCourant.code : ''] || {};
+  return Array.isArray(duMonde[joueur.id]) ? duMonde[joueur.id] : [];
+}
+window.MC_setEquipe = function(code, joueurId, equipe){
+  const toutes = equipesLocalesLire();
+  if(!toutes[code]) toutes[code] = {};
+  toutes[code][joueurId] = Array.isArray(equipe) ? equipe : [];
+  localStorage.setItem('mc_equipes', JSON.stringify(toutes));
+  if(mondeCourant && mondeCourant.code===code) rafraichirMonde(true);
+};
+function rendreEquipe(joueurs){
+  const bloc = document.getElementById('m-equipe');
+  if(!bloc) return;
+  const idt = identiteCourante;
+  const moi = joueurs.find(j=>idt && j.id===idt.joueur_id) || null;
+  const equipe = equipeDe(moi).slice(0,6);
+  if(!equipe.length){
+    bloc.innerHTML = '<p class="note">'+t('equipe_vide')+'</p>'
+      + '<div class="equipe-grille"><div class="poke-case vide">'+t('emplacement_vide')+'</div><div class="poke-case vide">'+t('emplacement_vide')+'</div></div>';
+    return;
+  }
+  bloc.innerHTML = '<div class="equipe-grille">' + equipe.map(pk=>{
+    const nom = pk.nom || pk.name || '?';
+    const niv = pk.niveau!=null ? pk.niveau : (pk.niv!=null ? pk.niv : (pk.level!=null ? pk.level : ''));
+    const pvMax = pk.pv_max!=null ? pk.pv_max : (pk.pvMax!=null ? pk.pvMax : null);
+    const pv = pk.pv!=null ? pk.pv : pvMax;
+    let barre = '', txt = '';
+    if(pvMax){
+      const pct = Math.max(0, Math.min(100, Math.round(100*pv/pvMax)));
+      const cls = pct>50 ? '' : (pct>25 ? ' moyen' : ' bas');
+      barre = '<div class="pv-barre"><div class="pv-remplissage'+cls+'" style="width:'+pct+'%"></div></div>';
+      txt = '<div class="pv-txt">'+pv+' / '+pvMax+'</div>';
+    }
+    const icone = pk.sprite ? '<div class="poke-icone"><img src="'+echapper(pk.sprite)+'" alt=""></div>' : '<div class="poke-icone"></div>';
+    return '<div class="poke-case">'+icone+'<div class="poke-infos"><div class="poke-nom">'+echapper(nom)
+      + (pk.sexe ? ' <span class="poke-niv">'+echapper(pk.sexe)+'</span>' : '')
+      + '</div><div class="poke-niv">'+(niv!=='' ? 'N. '+echapper(niv) : '')+'</div>'+barre+txt+'</div></div>';
+  }).join('') + '</div>';
+}
+
 function rendreMonde(joueurs, annonces, resolutions){
   const m = mondeCourant, idt = identiteCourante;
   document.getElementById('m-nom').textContent = m.nom;
@@ -467,6 +549,7 @@ function rendreMonde(joueurs, annonces, resolutions){
     return '<span class="pastille '+(aPoste?'ok':'attente')+'">'+(aPoste?'✅':'⏳')+' '+echapper(j.nom)
       + (j.est_hote?' · '+t('hote_badge'):'') + (idt && j.id===idt.joueur_id?' · '+t('toi'):'') + ' · '+echapper(j.langue)+'</span>';
   }).join('') || '<p class="note">—</p>';
+  rendreEquipe(joueurs);
   const mienne = annonces.find(a=>idt && a.joueur_id===idt.joueur_id && a.statut==='envoyee');
   const zone = document.getElementById('a-texte');
   if(document.activeElement !== zone) zone.value = mienne ? mienne.texte : '';
