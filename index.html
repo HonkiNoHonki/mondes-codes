@@ -102,6 +102,8 @@
   .pv-remplissage.bas{background:#e3352b}
   .pv-txt{font-size:11.5px; color:var(--doux); font-weight:700; text-align:right}
 
+  .portrait-pixel{flex:0 0 52px; width:52px; height:52px; border:2.5px solid var(--bord); border-radius:10px; background:#bfe3ff; image-rendering:pixelated}
+  .portrait-pixel.grand{flex:none; width:104px; height:104px; border-radius:14px}
   .perso-ligne{display:flex; gap:10px; align-items:flex-start; background:#fff; border:2px solid #b9d2ea; border-radius:12px; padding:9px 11px; margin:8px 0}
   .avatar-rond{flex:0 0 42px; width:42px; height:42px; border-radius:50%; border:2.5px solid var(--bord); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:18px; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.35); background:#8ea6c9}
   .avatar-rond.rouge{background:#e3352b} .avatar-rond.bleu{background:#2b6fe3} .avatar-rond.vert{background:#37a854}
@@ -278,6 +280,7 @@
     <h1 data-i18n="perso_titre">Création de personnage</h1>
     <div class="carte">
       <h3 data-i18n="perso_apparence">Apparence</h3>
+      <div id="p-apercu" style="text-align:center; margin:2px 0 8px"></div>
       <label data-i18n="lbl_avatar">Couleur d'avatar</label>
       <select id="p-avatar">
         <option value="rouge">Rouge</option><option value="bleu">Bleu</option><option value="vert">Vert</option>
@@ -635,13 +638,114 @@ function resumePhysique(f){
   if(f.yeux) morceaux.push(f.yeux);
   return morceaux.join(' · ');
 }
+/* ---------- portrait pixel automatique (buste + tête, style Génération 1) ----------
+   Dès qu'une fiche existe, le buste pixel du dresseur est composé à partir de ses champs :
+   teint, couleur/longueur de cheveux, couleur des yeux, couleur d'avatar (tenue + casquette),
+   casquette si l'accessoire/la tenue la mentionne, lunettes si mentionnées. Aucune image externe :
+   le même portrait ressort chez tous les joueurs, puisqu'il est recalculé depuis la fiche synchronisée. */
+const PEAUX = {'Très clair':'#ffe3c2','Clair':'#f3c98a','Mat':'#dfa763','Foncé':'#9c6633','Très foncé':'#5f3d22'};
+const COULEURS_AVATAR = {rouge:'#e3352b', bleu:'#2b6fe3', vert:'#37a854', jaune:'#e8a812', rose:'#e56bb0', violet:'#7d4fc9'};
+function couleurDepuisTexte(texte, table, defaut){
+  const s = ' ' + String(texte||'').toLowerCase() + ' ';
+  for(const cle in table){ if(s.includes(cle)) return table[cle]; }
+  return defaut;
+}
+function portraitPixel(f, nom){
+  /* Buste pixel style Génération 1 (Rouge/Bleu) : grille 24x24, contour sombre,
+     ombres en 2 tons, frange en pointes, casquette à panneau blanc façon héros de Bourg-Palette. */
+  f = f || {};
+  const teinte = (hex, k)=>{
+    const n = parseInt(hex.slice(1), 16);
+    let r=(n>>16)&255, v=(n>>8)&255, b=n&255;
+    if(k<1){ r=Math.round(r*k); v=Math.round(v*k); b=Math.round(b*k); }
+    else { r=Math.round(r+(255-r)*(k-1)); v=Math.round(v+(255-v)*(k-1)); b=Math.round(b+(255-b)*(k-1)); }
+    return '#'+[r,v,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+  };
+  const CONT = '#26232e';
+  const peau = PEAUX[f.peau] || '#f3c98a';
+  const peauO = teinte(peau, .78);
+  const cheveux = couleurDepuisTexte(f.cheveux_couleur, {noir:'#2a2422', 'châtain':'#7a4a21', chatain:'#7a4a21', brun:'#6b4423', marron:'#6b4423', blond:'#e8c95e', roux:'#c65a1e', orange:'#c65a1e', gris:'#9a9a9a', blanc:'#f0f0f0', rose:'#e56bb0', bleu:'#2b6fe3', vert:'#37a854', violet:'#7d4fc9', rouge:'#c22f22'}, '#6b4423');
+  const cheveuxO = teinte(cheveux, .62), cheveuxC = teinte(cheveux, 1.25);
+  const yeux = couleurDepuisTexte(f.yeux, {marron:'#4a2c14', brun:'#4a2c14', noisette:'#8a5a2b', bleu:'#2b6fe3', vert:'#2e9e4f', gris:'#7a8794', noir:'#1c1c1c'}, '#26232e');
+  const tenue = COULEURS_AVATAR[f.avatar] || '#e3352b';
+  const tenueO = teinte(tenue, .68), tenueC = teinte(tenue, 1.2);
+  const texteBas = ((f.accessoire||'') + ' ' + (f.tenue||'') + ' ' + (f.coiffure||'')).toLowerCase();
+  const casquette = texteBas.includes('casquette') || texteBas.includes('chapeau');
+  const lunettes = ((f.accessoire||'') + ' ' + (f.visage||'')).toLowerCase().includes('lunette');
+  const longueur = f.cheveux_longueur || 'Courts';
+  const W = 24, g = [];
+  for(let y=0;y<W;y++) g.push(new Array(W).fill(null));
+  const px=(x,y,c)=>{ if(x>=0&&x<W&&y>=0&&y<W) g[y][x]=c; };
+  const rect=(x0,y0,x1,y1,c)=>{ for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++) px(x,y,c); };
+  // --- tenue / buste : veste à col, ombre à droite ---
+  rect(4,20,19,23,tenue); rect(5,19,18,19,tenue);
+  rect(15,19,19,23,tenueO); rect(10,20,13,23,'#f4f1e6'); // plastron clair central
+  px(9,19,'#f4f1e6'); px(14,19,'#f4f1e6');
+  rect(4,20,4,23,CONT); rect(19,20,19,23,CONT); rect(5,23,18,23,tenueO);
+  // --- cou ---
+  rect(11,16,12,18,peauO); px(10,17,peauO);
+  // --- visage : forme Gén.1, contour sombre, ombre sur la droite ---
+  rect(8,6,15,6,peau); rect(6,7,17,13,peau); rect(7,14,16,14,peau); rect(9,15,14,15,peau);
+  rect(16,7,17,13,peauO); rect(15,14,16,14,peauO); rect(13,15,14,15,peauO);
+  px(5,10,peau); px(5,11,peau); px(18,10,peauO); px(18,11,peauO); // oreilles
+  // contour du visage
+  [8,9,10,11,12,13,14,15].forEach(x=>px(x,5,CONT)); px(6,6,CONT); px(7,6,CONT); px(16,6,CONT); px(17,6,CONT);
+  px(5,7,CONT); px(18,7,CONT); rect(5,8,5,9,CONT); rect(18,8,18,9,CONT); px(5,12,CONT); px(18,12,CONT);
+  px(6,13,CONT); px(17,13,CONT); px(6,14,CONT); px(17,14,CONT); px(7,15,CONT); px(8,15,CONT); px(15,15,CONT); px(16,15,CONT);
+  rect(9,16,10,16,CONT); rect(13,16,14,16,CONT); px(11,16,peau); px(12,16,peau);
+  // --- yeux verticaux façon Gén.1, sourcils, nez, bouche ---
+  rect(8,9,9,9,cheveuxO); rect(14,9,15,9,cheveuxO);
+  rect(8,10,8,11,yeux); rect(9,10,9,11,CONT); px(8,10,'#ffffff');
+  rect(14,10,14,11,CONT); rect(15,10,15,11,yeux); px(15,10,'#ffffff');
+  px(11,12,peauO); px(11,13,'#a34d2d'); px(12,13,'#a34d2d');
+  // --- cheveux : frange en pointes + ombres, selon la longueur ---
+  const frange = ()=>{ rect(6,4,17,5,cheveux); [6,8,11,14,17].forEach(x=>px(x,6,cheveux)); [7,12,15].forEach(x=>px(x,6,cheveuxO));
+    rect(6,4,17,4,cheveuxC); px(5,5,cheveux); px(18,5,cheveuxO); rect(17,5,17,5,cheveuxO); };
+  if(longueur==='Crâne rasé'){ rect(7,4,16,4,cheveux); rect(8,3,15,3,cheveuxO); }
+  else {
+    frange();
+    rect(5,6,5,7,cheveux); rect(18,6,18,7,cheveuxO);
+    if(longueur==='Mi-longs' || longueur==='Longs' || longueur==='Très longs'){ rect(4,6,4,11,cheveux); rect(19,6,19,11,cheveuxO); px(4,12,cheveux); px(19,12,cheveuxO); }
+    if(longueur==='Longs' || longueur==='Très longs'){ rect(4,13,4,17,cheveux); rect(19,13,19,17,cheveuxO); }
+    if(longueur==='Très longs'){ rect(4,18,4,19,cheveux); rect(19,18,19,19,cheveuxO); }
+  }
+  // --- casquette façon héros Gén.1 : dôme coloré, panneau avant blanc, visière ---
+  if(casquette){
+    rect(7,1,16,1,tenueC); rect(6,2,17,3,tenue); rect(10,2,13,4,'#f7f4ea'); rect(6,4,9,4,tenue); rect(14,4,17,4,tenue);
+    rect(5,5,18,5,tenueO); rect(4,6,19,6,tenueO); px(11,1,'#f7f4ea'); px(12,1,'#f7f4ea');
+    rect(6,2,6,3,tenueO); rect(17,2,17,3,tenueO);
+  }
+  // --- lunettes : monture fine ---
+  if(lunettes){ const L=CONT;
+    [7,13].forEach(x0=>{ rect(x0,9,x0+3,9,L); rect(x0,12,x0+3,12,L); px(x0,10,L); px(x0,11,L); px(x0+3,10,L); px(x0+3,11,L); });
+    px(11,10,L); px(12,10,L); px(5,10,L); px(18,10,L);
+    rect(8,10,8,11,yeux); rect(9,10,9,11,CONT); px(8,10,'#ffffff'); rect(14,10,14,11,CONT); rect(15,10,15,11,yeux); px(15,10,'#ffffff');
+  }
+  let rects='';
+  for(let y=0;y<W;y++) for(let x=0;x<W;x++){ if(g[y][x]) rects += '<rect x="'+x+'" y="'+y+'" width="1.02" height="1.02" fill="'+g[y][x]+'"/>'; }
+  return '<svg class="portrait-pixel" viewBox="0 0 24 24" role="img" aria-label="'+echapper(nom||'')+'" shape-rendering="crispEdges">'+rects+'</svg>';
+}
+function ficheDepuisFormulaire(){
+  const get = id=>{ const el=document.getElementById(id); return el ? el.value.trim() : ''; };
+  const val = id=>{ const el=document.getElementById(id); return el ? el.value : ''; };
+  return { avatar: val('p-avatar'), age: get('p-age'), taille: get('p-taille'), corpulence: val('p-corpulence'),
+    peau: val('p-peau'), cheveux_couleur: get('p-cheveux-couleur'), cheveux_longueur: val('p-cheveux-longueur'),
+    coiffure: get('p-coiffure'), yeux: get('p-yeux'), visage: get('p-visage'), tenue: get('p-tenue'),
+    accessoire: get('p-accessoire'), signe: get('p-signe'), description: get('p-description') };
+}
+function majApercu(){
+  const bloc = document.getElementById('p-apercu');
+  if(!bloc) return;
+  bloc.innerHTML = portraitPixel(ficheDepuisFormulaire(), identiteCourante ? identiteCourante.nom : '').replace('portrait-pixel', 'portrait-pixel grand');
+}
+
 function rendrePersonnages(joueurs){
   const bloc = document.getElementById('m-personnages');
   if(!bloc) return;
   bloc.innerHTML = joueurs.map(j=>{
     const f = physiqueDe(j);
     const initiale = echapper((j.nom||'?').trim().charAt(0).toUpperCase() || '?');
-    const av = '<div class="avatar-rond '+echapper(f && f.avatar ? f.avatar : '')+'">'+initiale+'</div>';
+    const av = f ? portraitPixel(f, j.nom) : '<div class="avatar-rond">'+initiale+'</div>';
     if(!f) return '<div class="perso-ligne">'+av+'<div class="perso-infos"><div class="perso-nom">'+echapper(j.nom)+'</div><div class="perso-resume">'+t('fiche_vide')+'</div></div></div>';
     const lignes = CHAMPS_PHYSIQUE.filter(c=>c!=='avatar' && f[c]).map(c=>'<div><b>'+t(LIBELLES_PHYSIQUE[c])+' :</b> '+echapper(f[c])+'</div>').join('');
     return '<div class="perso-ligne">'+av+'<div class="perso-infos"><div class="perso-nom">'+echapper(j.nom)+'</div>'
@@ -661,6 +765,7 @@ function ouvrirPersonnage(joueurs){
   set('p-tenue', f.tenue); set('p-accessoire', f.accessoire); set('p-signe', f.signe);
   set('p-description', f.description);
   document.getElementById('p-note').textContent = '';
+  majApercu();
   montrer('ecran-personnage');
 }
 async function sauverPersonnage(){
@@ -770,6 +875,7 @@ document.getElementById('btn-resoudre').addEventListener('click', resoudreTour);
 document.getElementById('btn-rafraichir').addEventListener('click', ()=>rafraichirMonde());
 document.getElementById('btn-mon-perso').addEventListener('click', async ()=>{ if(!mondeCourant) return; const joueurs = await DB.listerJoueurs(mondeCourant.code); ouvrirPersonnage(joueurs); });
 document.getElementById('btn-sauver-perso').addEventListener('click', sauverPersonnage);
+document.querySelectorAll('#ecran-personnage input, #ecran-personnage select, #ecran-personnage textarea').forEach(el=>{ el.addEventListener('input', majApercu); el.addEventListener('change', majApercu); });
 document.getElementById('btn-retour-monde').addEventListener('click', ()=>{ montrer('ecran-monde'); rafraichirMonde(true); });
 document.getElementById('btn-pause').addEventListener('click', async ()=>{ if(!mondeCourant) return; await DB.setStatutMonde(mondeCourant.code, mondeCourant.statut==='pause' ? 'actif' : 'pause'); rafraichirMonde(); });
 document.getElementById('btn-archiver').addEventListener('click', async ()=>{ if(!mondeCourant) return; await DB.setStatutMonde(mondeCourant.code, 'archive'); rafraichirMonde(); });
