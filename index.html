@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Mondes &amp; Codes — Chant &amp; Festin</title>
+<style>
+  :root{
+    --bg:#141824; --carte:#1f2637; --carte2:#28324a;
+    --bord:#3a4663; --txt:#eef1f8; --doux:#a7b1c9; --accent:#f5c542; --accent2:#5ec8e6;
+    --ok:#57d977; --ko:#ff6b6b; --rayon:16px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  body{margin:0; background:var(--bg); color:var(--txt); font-family:-apple-system,'Segoe UI',Roboto,'Hiragino Sans',sans-serif; font-size:16px}
+  .wrap{max-width:560px; margin:0 auto; padding:16px 14px 40px}
+  h1{font-size:26px; margin:6px 0 2px; text-align:center}
+  .sous{text-align:center; color:var(--doux); margin:0 0 18px; font-size:14px}
+  .carte{background:var(--carte); border:1px solid var(--bord); border-radius:var(--rayon); padding:16px; margin:12px 0}
+  .carte h2{margin:0 0 10px; font-size:19px}
+  .carte h3{margin:0 0 8px; font-size:16px}
+  label{display:block; font-size:13px; color:var(--doux); margin:12px 0 5px}
+  input[type=text], select, textarea{width:100%; background:var(--carte2); border:1px solid var(--bord); border-radius:10px; color:var(--txt); padding:11px 12px; font-size:16px; font-family:inherit}
+  textarea{min-height:84px; resize:vertical}
+  .btn{display:block; width:100%; border:none; border-radius:12px; padding:14px; font-size:17px; font-weight:700; cursor:pointer; margin:10px 0; font-family:inherit}
+  .btn-or{background:var(--accent); color:#241c00}
+  .btn-bleu{background:var(--accent2); color:#06222e}
+  .btn-fantome{background:transparent; border:1px solid var(--bord); color:var(--txt); font-weight:600}
+  .btn-petit{width:auto; display:inline-block; padding:8px 14px; font-size:14px; margin:4px 4px 4px 0}
+  .btn:disabled{opacity:.45; cursor:default}
+  .code-gros{font-size:34px; font-weight:800; letter-spacing:3px; text-align:center; color:var(--accent); margin:8px 0}
+  .pastille{display:inline-block; background:var(--carte2); border:1px solid var(--bord); border-radius:999px; padding:4px 11px; font-size:13px; margin:2px 3px 2px 0}
+  .pastille.ok{border-color:var(--ok); color:var(--ok)}
+  .pastille.attente{color:var(--doux)}
+  .annonce{background:var(--carte2); border-radius:10px; padding:10px 12px; margin:8px 0}
+  .annonce .qui{font-weight:700; font-size:14px; margin-bottom:3px}
+  .resolution{background:#232c18; border:1px solid #4a5a2a; border-radius:10px; padding:12px; margin:8px 0; white-space:pre-wrap}
+  .resolution .rtitre{font-weight:800; color:var(--accent); margin-bottom:6px}
+  .des-bloc{font-size:12.5px; color:var(--doux); background:var(--carte2); border-radius:8px; padding:8px 10px; margin-top:9px; white-space:pre-wrap; line-height:1.5}
+  .charte{font-size:13px; color:var(--doux); line-height:1.5}
+  .charte ul{margin:6px 0 0; padding-left:18px}
+  .charte li{margin:3px 0}
+  .note{font-size:13px; color:var(--doux); line-height:1.45}
+  .alerte{background:#3a2b12; border:1px solid #8a6a1f; border-radius:10px; padding:10px 12px; font-size:14px; margin:10px 0}
+  .erreur{background:#3d1d1d; border:1px solid #8a3a3a; border-radius:10px; padding:10px 12px; font-size:14px; margin:10px 0; display:none}
+  .cache{display:none !important}
+  .rangee{display:flex; gap:8px}
+  .rangee > *{flex:1}
+  .entete-monde{display:flex; justify-content:space-between; align-items:flex-start; gap:8px}
+  .entete-monde h2{margin:0}
+  .lien{color:var(--accent2); word-break:break-all; font-size:13px}
+  .separateur{border:none; border-top:1px solid var(--bord); margin:16px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== ACCUEIL ===== -->
+  <section id="ecran-accueil">
+    <h1>🌍 <span data-i18n="app_titre">Mondes &amp; Codes</span></h1>
+    <p class="sous" data-i18n="app_sous">Chant &amp; Festin entre amis — un monde, un code, une aventure.</p>
+    <div id="bandeau-local" class="alerte cache" data-i18n="bandeau_local">Mode démo local : la partie vit sur cet appareil (la synchro entre téléphones arrive avec le projet Supabase dédié).</div>
+    <button class="btn btn-or" id="btn-vers-creer" data-i18n="btn_creer">✨ Créer un monde</button>
+    <button class="btn btn-bleu" id="btn-vers-rejoindre" data-i18n="btn_rejoindre">🔑 Rejoindre avec un code</button>
+    <div id="bloc-mes-mondes" class="cache">
+      <hr class="separateur">
+      <h3 data-i18n="mes_mondes">Mes mondes sur cet appareil</h3>
+      <div id="liste-mes-mondes"></div>
+    </div>
+    <p class="note" style="text-align:center; margin-top:22px">Phase 1 — MJ manuel (l'hôte résout les tours). Le MJ IA arrive en Phase 2.</p>
+  </section>
+
+  <!-- ===== CRÉER ===== -->
+  <section id="ecran-creer" class="cache">
+    <h1 data-i18n="creer_titre">Créer un monde</h1>
+    <div class="carte">
+      <label data-i18n="lbl_nom_campagne">Nom de la campagne</label>
+      <input type="text" id="cr-nom" maxlength="60" placeholder="Ex. La Bande du Soir">
+      <label data-i18n="lbl_region">Région de départ (saison 1)</label>
+      <select id="cr-region">
+        <option value="Kanto">Kanto — Génération 1 (151 Pokémon)</option>
+        <option value="Johto" disabled>Johto — Saison 2 (bientôt)</option>
+        <option value="Hoenn" disabled>Hoenn — Saison 3 (bientôt)</option>
+      </select>
+      <label data-i18n="lbl_mode">Mode</label>
+      <select id="cr-mode">
+        <option value="multi">Multi — 2 à 6 joueurs</option>
+        <option value="solo">Solo — contre un rival IA (Phase 2)</option>
+      </select>
+      <label data-i18n="lbl_max">Nombre de joueurs max</label>
+      <select id="cr-max">
+        <option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option>
+      </select>
+      <label data-i18n="lbl_ton">Ton du monde</label>
+      <select id="cr-ton">
+        <option value="leger">Léger — personne ne meurt (défaut)</option>
+        <option value="sombre">Sombre — la mort existe dans cet univers</option>
+      </select>
+      <label data-i18n="lbl_langue_defaut">Langue par défaut du monde</label>
+      <select id="cr-langue-defaut" class="select-langue"></select>
+    </div>
+    <div class="carte">
+      <h3 data-i18n="ton_perso">Toi, l'hôte</h3>
+      <label data-i18n="lbl_nom_dresseur">Ton nom de dresseur</label>
+      <input type="text" id="cr-dresseur" maxlength="30" placeholder="Ex. Axel">
+      <label data-i18n="lbl_ta_langue">Ta langue</label>
+      <select id="cr-langue" class="select-langue"></select>
+    </div>
+    <div class="erreur" id="cr-erreur"></div>
+    <button class="btn btn-or" id="btn-creer-monde" data-i18n="btn_creer_monde">Créer le monde</button>
+    <button class="btn btn-fantome" data-retour data-i18n="btn_retour">← Retour</button>
+  </section>
+
+  <!-- ===== MONDE CRÉÉ (code) ===== -->
+  <section id="ecran-code" class="cache">
+    <h1 data-i18n="code_titre">Ton monde est prêt !</h1>
+    <div class="carte">
+      <p class="note" data-i18n="code_explique">Donne ce code à tes amis : ils ouvrent l'app, « Rejoindre », tapent le code, et ils sont dans la partie.</p>
+      <div class="code-gros" id="code-affiche"></div>
+      <p class="note"><span data-i18n="lien_invitation">Lien d'invitation :</span><br><span class="lien" id="lien-affiche"></span></p>
+    </div>
+    <button class="btn btn-or" id="btn-entrer-monde" data-i18n="btn_entrer">Entrer dans le monde →</button>
+  </section>
+
+  <!-- ===== REJOINDRE ===== -->
+  <section id="ecran-rejoindre" class="cache">
+    <h1 data-i18n="rejoindre_titre">Rejoindre un monde</h1>
+    <div class="carte">
+      <label data-i18n="lbl_code">Code du monde</label>
+      <input type="text" id="rj-code" maxlength="12" placeholder="KANTO-0000" style="text-transform:uppercase">
+      <label data-i18n="lbl_nom_dresseur2">Ton nom de dresseur</label>
+      <input type="text" id="rj-dresseur" maxlength="30" placeholder="Ex. Julien">
+      <label data-i18n="lbl_ta_langue2">Ta langue</label>
+      <select id="rj-langue" class="select-langue"></select>
+    </div>
+    <div class="erreur" id="rj-erreur"></div>
+    <button class="btn btn-bleu" id="btn-rejoindre-monde" data-i18n="btn_rejoindre_monde">Rejoindre</button>
+    <button class="btn btn-fantome" data-retour data-i18n="btn_retour2">← Retour</button>
+  </section>
+
+  <!-- ===== MONDE ===== -->
+  <section id="ecran-monde" class="cache">
+    <div class="entete-monde">
+      <div>
+        <h2 id="m-nom"></h2>
+        <div class="note"><span id="m-code"></span> · <span id="m-tour"></span></div>
+      </div>
+      <button class="btn btn-fantome btn-petit" id="btn-quitter" data-i18n="btn_quitter">Quitter</button>
+    </div>
+    <div id="m-chips"></div>
+
+    <div class="carte">
+      <h3 data-i18n="joueurs_titre">Dresseurs</h3>
+      <div id="m-joueurs"></div>
+    </div>
+
+    <div class="carte" id="bloc-annonce">
+      <h3><span data-i18n="ton_annonce">Ton annonce — tour</span> <span id="a-tour"></span></h3>
+      <textarea id="a-texte" maxlength="1200" data-i18n-ph="annonce_ph" placeholder="Que fais-tu ce tour-ci ?"></textarea>
+      <button class="btn btn-or" id="btn-poster" data-i18n="btn_poster">📣 Poster mon annonce</button>
+      <p class="note" id="a-note"></p>
+    </div>
+
+    <div class="carte">
+      <h3 data-i18n="annonces_titre">Annonces du tour</h3>
+      <div id="m-annonces"></div>
+    </div>
+
+    <div class="carte cache" id="bloc-hote">
+      <h3 data-i18n="hote_titre">🎲 Panneau de l'hôte — MJ manuel (Phase 1)</h3>
+      <p class="note" id="h-etat"></p>
+      <label data-i18n="lbl_resolution">Résolution du tour</label>
+      <textarea id="h-texte" maxlength="6000" placeholder="Raconte ce qui se passe…"></textarea>
+      <label data-i18n="lbl_des">Déroulé des dés (optionnel — affiché en petit, après le récit)</label>
+      <textarea id="h-des" maxlength="2000" data-i18n-ph="des_ph" placeholder="Un jet par ligne : Axel — face 14 +1 = 15 NETTE"></textarea>
+      <button class="btn btn-bleu" id="btn-resoudre" data-i18n="btn_resoudre">✔ Résoudre le tour et passer au suivant</button>
+      <hr class="separateur">
+      <details class="charte">
+        <summary><b data-i18n="charte_titre">📜 Charte du MJ (§13 du plan)</b></summary>
+        <ul>
+          <li data-i18n="charte_1">Rythme : aucun arc sans bascule au bout de quelques tours.</li>
+          <li data-i18n="charte_2">Porte fermée : annonce-la dans la résolution du même tour.</li>
+          <li data-i18n="charte_3">Chance unique : signale-la avant l'action des joueurs.</li>
+          <li data-i18n="charte_4">Rareté : donne toujours sa fréquence (une fois par an, saisonnier, récurrent, jamais), via un PNJ ou le narrateur, avant les tentatives.</li>
+          <li data-i18n="charte_5">Contexte : énonce les règles du monde avant que les joueurs dépensent leurs tours.</li>
+          <li data-i18n="charte_6">Pas de fil fantôme : aucun fil de plusieurs tours autour de qui ne rejoindra jamais le groupe.</li>
+        </ul>
+      </details>
+      <hr class="separateur">
+      <button class="btn btn-fantome btn-petit" id="btn-pause"></button>
+      <button class="btn btn-fantome btn-petit" id="btn-archiver" data-i18n="btn_archiver">Archiver le monde</button>
+    </div>
+
+    <div class="carte">
+      <h3 data-i18n="journal_titre">📖 Journal des résolutions</h3>
+      <div id="m-journal"></div>
+    </div>
+    <button class="btn btn-fantome" id="btn-rafraichir" data-i18n="btn_rafraichir">↻ Rafraîchir</button>
+  </section>
+
+</div>
+<script>
+'use strict';
+/* ============================================================
+   MONDES & CODES — Phase 1 (squelette multi-mondes, MJ manuel)
+   MISE EN ROUTE : créer le projet Supabase dédié (voir README),
+   exécuter schema.sql, puis coller ci-dessous l'URL du projet
+   et sa clé publique (« anon public », faite pour vivre dans
+   l'app — jamais la clé service_role). Tant que c'est vide :
+   mode local (démo sur un seul appareil).
+   ============================================================ */
+const CONFIG = {
+  SUPABASE_URL: 'https://begerhgzobyneetpbovw.supabase.co',
+  SUPABASE_KEY: 'sb_publishable_psmetmOSJCwjy6BEyBW9TA_dLeY1YKm'
+};
+const MODE_SUPABASE = !!(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_KEY);
+
+const LANGUES = [
+  {code:'fr', nom:'Français'}, {code:'en', nom:'English'},
+  {code:'ja', nom:'日本語'}, {code:'es', nom:'Español'},
+  {code:'de', nom:'Deutsch'}, {code:'it', nom:'Italiano'}
+];
+
+const I18N = {
+fr:{app_titre:'Mondes & Codes',app_sous:'Chant & Festin entre amis — un monde, un code, une aventure.',bandeau_local:'Mode démo local : la partie vit sur cet appareil (la synchro entre téléphones arrive avec le projet Supabase dédié).',btn_creer:'✨ Créer un monde',btn_rejoindre:'🔑 Rejoindre avec un code',mes_mondes:'Mes mondes sur cet appareil',creer_titre:'Créer un monde',lbl_nom_campagne:'Nom de la campagne',lbl_region:'Région de départ (saison 1)',lbl_mode:'Mode',lbl_max:'Nombre de joueurs max',lbl_ton:'Ton du monde',lbl_langue_defaut:'Langue par défaut du monde',ton_perso:"Toi, l'hôte",lbl_nom_dresseur:'Ton nom de dresseur',lbl_ta_langue:'Ta langue',btn_creer_monde:'Créer le monde',btn_retour:'← Retour',code_titre:'Ton monde est prêt !',code_explique:'Donne ce code à tes amis : ils ouvrent l\u2019app, « Rejoindre », tapent le code, et ils sont dans la partie.',lien_invitation:'Lien d\u2019invitation :',btn_entrer:'Entrer dans le monde →',rejoindre_titre:'Rejoindre un monde',lbl_code:'Code du monde',lbl_nom_dresseur2:'Ton nom de dresseur',lbl_ta_langue2:'Ta langue',btn_rejoindre_monde:'Rejoindre',btn_retour2:'← Retour',btn_quitter:'Quitter',joueurs_titre:'Dresseurs',ton_annonce:'Ton annonce — tour',annonce_ph:'Que fais-tu ce tour-ci ?',btn_poster:'📣 Poster mon annonce',annonces_titre:'Annonces du tour',hote_titre:"🎲 Panneau de l'hôte — MJ manuel (Phase 1)",lbl_resolution:'Résolution du tour',btn_resoudre:'✔ Résoudre le tour et passer au suivant',btn_archiver:'Archiver le monde',journal_titre:'📖 Journal des résolutions',btn_rafraichir:'↻ Rafraîchir',tour_n:'Tour',a_annonce:'a annoncé',en_attente:'en attente',aucune_annonce:'Aucune annonce pour le moment.',aucune_resolution:'Aucune résolution pour le moment.',tour_complet:'✅ Tour complet : tout le monde a annoncé, tu peux résoudre.',tour_incomplet:'⏳ Annonces en cours…',hote_badge:'hôte',toi:'toi',erreur_nom_vide:'Écris un nom de campagne et ton nom de dresseur.',erreur_code_vide:'Écris le code du monde et ton nom de dresseur.',erreur_code_inconnu:'Code inconnu : aucun monde ne porte ce code.',erreur_monde_plein:'Ce monde est plein.',erreur_nom_pris:'Ce nom de dresseur est déjà pris dans ce monde.',erreur_reseau:'Connexion impossible pour le moment.',annonce_postee:'Annonce postée ✔ — tu peux la modifier tant que le tour n\u2019est pas résolu.',annonce_vide:'Écris d\u2019abord ton annonce.',resolution_vide:'Écris d\u2019abord la résolution.',confirme_incomplet:'Le tour n\u2019est pas complet. Résoudre quand même ?',pause:'⏸ Mettre en pause',reprendre:'▶ Reprendre',monde_en_pause:'⏸ Ce monde est en pause.',monde_archive_msg:'🗄 Ce monde est archivé (lecture seule).',solo_note:'Mode solo : le rival IA arrive en Phase 2 — pour l\u2019instant, l\u2019hôte résout seul.',region:'Région',saison:'Saison',ton_leger:'Léger',ton_sombre:'Sombre',lbl_des:'Déroulé des dés (optionnel — affiché en petit, après le récit)',des_ph:'Un jet par ligne : Axel — face 14 +1 = 15 NETTE',charte_titre:'📜 Charte du MJ (§13 du plan)',charte_1:'Rythme : aucun arc sans bascule au bout de quelques tours.',charte_2:'Porte fermée : annonce-la dans la résolution du même tour.',charte_3:'Chance unique : signale-la avant l\u2019action des joueurs.',charte_4:'Rareté : donne toujours sa fréquence (une fois par an, saisonnier, récurrent, jamais), via un PNJ ou le narrateur, avant les tentatives.',charte_5:'Contexte : énonce les règles du monde avant que les joueurs dépensent leurs tours.',charte_6:'Pas de fil fantôme : aucun fil de plusieurs tours autour de qui ne rejoindra jamais le groupe.'},
+en:{app_titre:'Worlds & Codes',app_sous:'Chant & Festin with friends — one world, one code, one adventure.',bandeau_local:'Local demo mode: the game lives on this device (cross-phone sync comes with the dedicated Supabase project).',btn_creer:'✨ Create a world',btn_rejoindre:'🔑 Join with a code',mes_mondes:'My worlds on this device',creer_titre:'Create a world',lbl_nom_campagne:'Campaign name',lbl_region:'Starting region (season 1)',lbl_mode:'Mode',lbl_max:'Max players',lbl_ton:'World tone',lbl_langue_defaut:'World default language',ton_perso:'You, the host',lbl_nom_dresseur:'Your trainer name',lbl_ta_langue:'Your language',btn_creer_monde:'Create the world',btn_retour:'← Back',code_titre:'Your world is ready!',code_explique:'Give this code to your friends: they open the app, tap “Join”, enter the code, and they are in.',lien_invitation:'Invite link:',btn_entrer:'Enter the world →',rejoindre_titre:'Join a world',lbl_code:'World code',lbl_nom_dresseur2:'Your trainer name',lbl_ta_langue2:'Your language',btn_rejoindre_monde:'Join',btn_retour2:'← Back',btn_quitter:'Leave',joueurs_titre:'Trainers',ton_annonce:'Your announcement — turn',annonce_ph:'What do you do this turn?',btn_poster:'📣 Post my announcement',annonces_titre:'This turn\u2019s announcements',hote_titre:'🎲 Host panel — manual GM (Phase 1)',lbl_resolution:'Turn resolution',btn_resoudre:'✔ Resolve the turn and move on',btn_archiver:'Archive the world',journal_titre:'📖 Resolution journal',btn_rafraichir:'↻ Refresh',tour_n:'Turn',a_annonce:'has announced',en_attente:'waiting',aucune_annonce:'No announcements yet.',aucune_resolution:'No resolutions yet.',tour_complet:'✅ Turn complete: everyone has announced, you can resolve.',tour_incomplet:'⏳ Announcements in progress…',hote_badge:'host',toi:'you',erreur_nom_vide:'Enter a campaign name and your trainer name.',erreur_code_vide:'Enter the world code and your trainer name.',erreur_code_inconnu:'Unknown code: no world has this code.',erreur_monde_plein:'This world is full.',erreur_nom_pris:'That trainer name is already taken in this world.',erreur_reseau:'Connection failed for now.',annonce_postee:'Announcement posted ✔ — you can edit it until the turn is resolved.',annonce_vide:'Write your announcement first.',resolution_vide:'Write the resolution first.',confirme_incomplet:'The turn is not complete. Resolve anyway?',pause:'⏸ Pause',reprendre:'▶ Resume',monde_en_pause:'⏸ This world is paused.',monde_archive_msg:'🗄 This world is archived (read-only).',solo_note:'Solo mode: the AI rival arrives in Phase 2 — for now, the host resolves alone.',region:'Region',saison:'Season',ton_leger:'Light',ton_sombre:'Dark',lbl_des:'Dice log (optional — shown small, after the story)',des_ph:'One roll per line: Axel — face 14 +1 = 15 CLEAN SUCCESS',charte_titre:'📜 GM charter (plan §13)',charte_1:'Pacing: no arc without a turning point after a few turns.',charte_2:'Closed door: announce it in the same turn\u2019s resolution.',charte_3:'One-time chance: flag it before the players act.',charte_4:'Rarity: always give its frequency (once a year, seasonal, recurring, never), via an NPC or the narrator, before attempts.',charte_5:'Context: state the world\u2019s rules before players spend turns on them.',charte_6:'No ghost thread: no multi-turn thread around someone who will never join the group.'}
+};
+let uiLang = localStorage.getItem('mc_ui_lang') || 'fr';
+function t(cle){ const d = I18N[uiLang] || I18N.fr; return d[cle] || I18N.fr[cle] || cle; }
+function appliquerI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ el.innerHTML = t(el.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ el.setAttribute('placeholder', t(el.getAttribute('data-i18n-ph'))); });
+}
+
+/* ---------- utilitaires ---------- */
+function jetonAleatoire(n){
+  const chars='0123456789abcdef'; let s='';
+  const buf=new Uint32Array(n); crypto.getRandomValues(buf);
+  for(let i=0;i<n;i++) s+=chars[buf[i]%16];
+  return s;
+}
+function genererCode(region, codesExistants){
+  const prefixe = region.toUpperCase().replace(/[^A-Z]/g,'').slice(0,6) || 'MONDE';
+  for(let essai=0; essai<200; essai++){
+    const num = 1000 + Math.floor(Math.random()*9000);
+    const code = prefixe + '-' + num;
+    if(!codesExistants.includes(code)) return code;
+  }
+  return prefixe + '-' + Date.now()%100000;
+}
+function tourComplet(joueurs, annonces){
+  if(!joueurs.length) return false;
+  const ids = new Set(annonces.filter(a=>a.statut==='envoyee').map(a=>a.joueur_id));
+  return joueurs.every(j=>ids.has(j.id));
+}
+
+/* ---------- couche données : interface unique, 2 moteurs ---------- */
+function localLire(){ try{ return JSON.parse(localStorage.getItem('mc_local_db')||'null') || {mondes:[],joueurs:[],annonces:[],resolutions:[]}; }catch(e){ return {mondes:[],joueurs:[],annonces:[],resolutions:[]}; } }
+function localEcrire(db){ localStorage.setItem('mc_local_db', JSON.stringify(db)); }
+let compteurLocal = Date.now()%100000;
+function nouvelId(){ return 'loc-' + (++compteurLocal) + '-' + jetonAleatoire(4); }
+
+const DBLocal = {
+  async creerMonde(m){ const db=localLire(); db.mondes.push(m); localEcrire(db); return m; },
+  async getMonde(code){ const db=localLire(); return db.mondes.find(m=>m.code===code) || null; },
+  async listerCodes(){ const db=localLire(); return db.mondes.map(m=>m.code); },
+  async ajouterJoueur(j){ const db=localLire(); db.joueurs.push(j); localEcrire(db); return j; },
+  async listerJoueurs(code){ const db=localLire(); return db.joueurs.filter(j=>j.monde_code===code); },
+  async posterAnnonce(a){
+    const db=localLire();
+    const ex = db.annonces.find(x=>x.monde_code===a.monde_code && x.tour===a.tour && x.joueur_id===a.joueur_id && x.statut==='envoyee');
+    if(ex){ ex.texte=a.texte; localEcrire(db); return ex; }
+    db.annonces.push(a); localEcrire(db); return a;
+  },
+  async listerAnnonces(code, tour){ const db=localLire(); return db.annonces.filter(a=>a.monde_code===code && a.tour===tour); },
+  async posterResolution(r){
+    const db=localLire(); db.resolutions.push(r);
+    db.annonces.forEach(a=>{ if(a.monde_code===r.monde_code && a.tour===r.tour && a.statut==='envoyee') a.statut='resolue'; });
+    const m = db.mondes.find(x=>x.code===r.monde_code); if(m) m.tour_courant = r.tour+1;
+    localEcrire(db); return r;
+  },
+  async listerResolutions(code){ const db=localLire(); return db.resolutions.filter(r=>r.monde_code===code).sort((x,y)=>y.tour-x.tour); },
+  async setStatutMonde(code, statut){ const db=localLire(); const m=db.mondes.find(x=>x.code===code); if(m) m.statut=statut; localEcrire(db); }
+};
+
+async function sb(requete, options){
+  const res = await fetch(CONFIG.SUPABASE_URL + '/rest/v1/' + requete, Object.assign({
+    headers:{ 'apikey':CONFIG.SUPABASE_KEY, 'Authorization':'Bearer '+CONFIG.SUPABASE_KEY, 'Content-Type':'application/json' }
+  }, options||{}));
+  if(!res.ok) throw new Error('supabase ' + res.status);
+  const texte = await res.text();
+  return texte ? JSON.parse(texte) : null;
+}
+const DBSupabase = {
+  async creerMonde(m){ const r = await sb('mondes', {method:'POST', headers:{'apikey':CONFIG.SUPABASE_KEY,'Authorization':'Bearer '+CONFIG.SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=representation'}, body:JSON.stringify(m)}); return r[0]; },
+  async getMonde(code){ const r = await sb('mondes?code=eq.'+encodeURIComponent(code)+'&select=*'); return (r && r[0]) || null; },
+  async listerCodes(){ const r = await sb('mondes?select=code'); return (r||[]).map(m=>m.code); },
+  async ajouterJoueur(j){ const r = await sb('joueurs', {method:'POST', headers:{'apikey':CONFIG.SUPABASE_KEY,'Authorization':'Bearer '+CONFIG.SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=representation'}, body:JSON.stringify(j)}); return r[0]; },
+  async listerJoueurs(code){ return (await sb('joueurs?monde_code=eq.'+encodeURIComponent(code)+'&select=*&order=cree_le.asc')) || []; },
+  async posterAnnonce(a){
+    const r = await sb('annonces?on_conflict=monde_code,tour,joueur_id', {method:'POST', headers:{'apikey':CONFIG.SUPABASE_KEY,'Authorization':'Bearer '+CONFIG.SUPABASE_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}, body:JSON.stringify(a)});
+    return r && r[0];
+  },
+  async listerAnnonces(code, tour){ return (await sb('annonces?monde_code=eq.'+encodeURIComponent(code)+'&tour=eq.'+tour+'&select=*&order=cree_le.asc')) || []; },
+  async posterResolution(r){
+    const ins = await sb('resolutions', {method:'POST', headers:{'apikey':CONFIG.SUPABASE_KEY,'Authorization':'Bearer '+CONFIG.SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=representation'}, body:JSON.stringify(r)});
+    await sb('annonces?monde_code=eq.'+encodeURIComponent(r.monde_code)+'&tour=eq.'+r.tour+'&statut=eq.envoyee', {method:'PATCH', headers:{'apikey':CONFIG.SUPABASE_KEY,'Authorization':'Bearer '+CONFIG.SUPABASE_KEY,'Content-Type':'application/json'}, body:JSON.stringify({statut:'resolue'})});
+    await sb('mondes?code=eq.'+encodeURIComponent(r.monde_code), {method:'PATCH', headers:{'apikey':CONFIG.SUPABASE_KEY,'Authorization':'Bearer '+CONFIG.SUPABASE_KEY,'Content-Type':'application/json'}, body:JSON.stringify({tour_courant:r.tour+1})});
+    return ins && ins[0];
+  },
+  async listerResolutions(code){ return (await sb('resolutions?monde_code=eq.'+encodeURIComponent(code)+'&select=*&order=tour.desc')) || []; },
+  async setStatutMonde(code, statut){ await sb('mondes?code=eq.'+encodeURIComponent(code), {method:'PATCH', headers:{'apikey':CONFIG.SUPABASE_KEY,'Authorization':'Bearer '+CONFIG.SUPABASE_KEY,'Content-Type':'application/json'}, body:JSON.stringify({statut})}); }
+};
+const DB = MODE_SUPABASE ? DBSupabase : DBLocal;
+/* ---------- identités locales (par monde) ---------- */
+function identitesLire(){ try{ return JSON.parse(localStorage.getItem('mc_identities')||'{}'); }catch(e){ return {}; } }
+function identiteSauver(code, idt){ const toutes = identitesLire(); toutes[code]=idt; localStorage.setItem('mc_identities', JSON.stringify(toutes)); }
+function identiteDu(code){ return identitesLire()[code] || null; }
+
+/* ---------- état de l'écran ---------- */
+let mondeCourant = null;      // ligne « mondes »
+let identiteCourante = null;  // {joueur_id, nom, langue, jeton, hote}
+let minuteur = null;
+
+function montrer(id){
+  ['ecran-accueil','ecran-creer','ecran-code','ecran-rejoindre','ecran-monde'].forEach(x=>{
+    document.getElementById(x).classList.toggle('cache', x!==id);
+  });
+  window.scrollTo(0,0);
+}
+function erreur(idBloc, msg){ const el=document.getElementById(idBloc); el.textContent=msg; el.style.display = msg ? 'block' : 'none'; }
+function echapper(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------- accueil ---------- */
+function rendreAccueil(){
+  document.getElementById('bandeau-local').classList.toggle('cache', MODE_SUPABASE);
+  const toutes = identitesLire(); const codes = Object.keys(toutes);
+  const bloc = document.getElementById('bloc-mes-mondes');
+  bloc.classList.toggle('cache', !codes.length);
+  document.getElementById('liste-mes-mondes').innerHTML = codes.map(code=>{
+    const idt = toutes[code];
+    return '<button class="btn btn-fantome" data-entrer="'+echapper(code)+'">🌍 '+echapper(code)+' — '+echapper(idt.nom)+'</button>';
+  }).join('');
+  document.querySelectorAll('[data-entrer]').forEach(b=>b.addEventListener('click', ()=>entrerDansMonde(b.getAttribute('data-entrer'))));
+}
+
+/* ---------- création ---------- */
+async function creerMonde(){
+  erreur('cr-erreur','');
+  const nom = document.getElementById('cr-nom').value.trim();
+  const dresseur = document.getElementById('cr-dresseur').value.trim();
+  if(!nom || !dresseur){ erreur('cr-erreur', t('erreur_nom_vide')); return; }
+  const region = document.getElementById('cr-region').value;
+  try{
+    const codes = await DB.listerCodes();
+    const code = genererCode(region, codes);
+    const monde = { id: MODE_SUPABASE ? undefined : nouvelId(), code, nom,
+      region, saison:1, langue_defaut: document.getElementById('cr-langue-defaut').value,
+      max_joueurs: parseInt(document.getElementById('cr-max').value,10),
+      ton: document.getElementById('cr-ton').value, mode: document.getElementById('cr-mode').value,
+      tour_courant: 1, statut:'actif' };
+    if(MODE_SUPABASE) delete monde.id;
+    const m = await DB.creerMonde(monde);
+    const joueur = { id: MODE_SUPABASE ? undefined : nouvelId(), monde_code: code, nom: dresseur,
+      langue: document.getElementById('cr-langue').value, jeton: jetonAleatoire(16), est_hote: true };
+    if(MODE_SUPABASE) delete joueur.id;
+    const j = await DB.ajouterJoueur(joueur);
+    identiteSauver(code, { joueur_id: j.id, nom: dresseur, langue: j.langue, jeton: j.jeton, hote:true });
+    document.getElementById('code-affiche').textContent = code;
+    document.getElementById('lien-affiche').textContent = location.href.split('?')[0].split('#')[0] + '?code=' + code;
+    mondeCourant = m; identiteCourante = identiteDu(code);
+    montrer('ecran-code');
+  }catch(e){ erreur('cr-erreur', t('erreur_reseau')); }
+}
+
+/* ---------- rejoindre ---------- */
+async function rejoindreMonde(){
+  erreur('rj-erreur','');
+  const code = document.getElementById('rj-code').value.trim().toUpperCase();
+  const dresseur = document.getElementById('rj-dresseur').value.trim();
+  if(!code || !dresseur){ erreur('rj-erreur', t('erreur_code_vide')); return; }
+  try{
+    const deja = identiteDu(code);
+    if(deja && deja.nom.toLowerCase()===dresseur.toLowerCase()){ entrerDansMonde(code); return; }
+    const monde = await DB.getMonde(code);
+    if(!monde){ erreur('rj-erreur', t('erreur_code_inconnu')); return; }
+    const joueurs = await DB.listerJoueurs(code);
+    if(joueurs.some(j=>j.nom.toLowerCase()===dresseur.toLowerCase())){ erreur('rj-erreur', t('erreur_nom_pris')); return; }
+    if(joueurs.length >= monde.max_joueurs){ erreur('rj-erreur', t('erreur_monde_plein')); return; }
+    const joueur = { id: MODE_SUPABASE ? undefined : nouvelId(), monde_code: code, nom: dresseur,
+      langue: document.getElementById('rj-langue').value, jeton: jetonAleatoire(16), est_hote:false };
+    if(MODE_SUPABASE) delete joueur.id;
+    const j = await DB.ajouterJoueur(joueur);
+    identiteSauver(code, { joueur_id: j.id, nom: dresseur, langue: j.langue, jeton: j.jeton, hote:false });
+    entrerDansMonde(code);
+  }catch(e){ erreur('rj-erreur', t('erreur_reseau')); }
+}
+
+/* ---------- écran monde ---------- */
+async function entrerDansMonde(code){
+  const idt = identiteDu(code);
+  if(!idt){ montrer('ecran-rejoindre'); document.getElementById('rj-code').value = code; return; }
+  identiteCourante = idt;
+  uiLang = idt.langue && I18N[idt.langue] ? idt.langue : 'fr';
+  localStorage.setItem('mc_ui_lang', uiLang);
+  appliquerI18n();
+  mondeCourant = await DB.getMonde(code);
+  if(!mondeCourant){ montrer('ecran-accueil'); rendreAccueil(); return; }
+  montrer('ecran-monde');
+  await rafraichirMonde();
+  if(minuteur) clearInterval(minuteur);
+  minuteur = setInterval(()=>{ if(mondeCourant) rafraichirMonde(true); }, 8000);
+}
+async function rafraichirMonde(silencieux){
+  if(!mondeCourant) return;
+  try{
+    mondeCourant = await DB.getMonde(mondeCourant.code) || mondeCourant;
+    const joueurs = await DB.listerJoueurs(mondeCourant.code);
+    const annonces = await DB.listerAnnonces(mondeCourant.code, mondeCourant.tour_courant);
+    const resolutions = await DB.listerResolutions(mondeCourant.code);
+    rendreMonde(joueurs, annonces, resolutions);
+  }catch(e){ if(!silencieux) console.warn(e); }
+}
+function rendreMonde(joueurs, annonces, resolutions){
+  const m = mondeCourant, idt = identiteCourante;
+  document.getElementById('m-nom').textContent = m.nom;
+  document.getElementById('m-code').textContent = m.code;
+  document.getElementById('m-tour').textContent = t('tour_n') + ' ' + m.tour_courant;
+  document.getElementById('a-tour').textContent = m.tour_courant;
+  const chips = [
+    t('region')+' : '+m.region, t('saison')+' '+m.saison,
+    m.ton==='sombre' ? t('ton_sombre') : t('ton_leger'), m.mode
+  ];
+  if(m.statut==='pause') chips.push(t('monde_en_pause'));
+  if(m.statut==='archive') chips.push(t('monde_archive_msg'));
+  document.getElementById('m-chips').innerHTML = chips.map(c=>'<span class="pastille">'+echapper(c)+'</span>').join('');
+  const parId = {}; joueurs.forEach(j=>parId[j.id]=j);
+  document.getElementById('m-joueurs').innerHTML = joueurs.map(j=>{
+    const aPoste = annonces.some(a=>a.joueur_id===j.id && a.statut==='envoyee');
+    return '<span class="pastille '+(aPoste?'ok':'attente')+'">'+(aPoste?'✅':'⏳')+' '+echapper(j.nom)
+      + (j.est_hote?' · '+t('hote_badge'):'') + (idt && j.id===idt.joueur_id?' · '+t('toi'):'') + ' · '+echapper(j.langue)+'</span>';
+  }).join('') || '<p class="note">—</p>';
+  const mienne = annonces.find(a=>idt && a.joueur_id===idt.joueur_id && a.statut==='envoyee');
+  const zone = document.getElementById('a-texte');
+  if(document.activeElement !== zone) zone.value = mienne ? mienne.texte : '';
+  document.getElementById('a-note').textContent = mienne ? t('annonce_postee') : '';
+  const blocAnnonces = document.getElementById('m-annonces');
+  blocAnnonces.innerHTML = annonces.length ? annonces.map(a=>
+    '<div class="annonce"><div class="qui">'+echapper((parId[a.joueur_id]||{}).nom || '?')+'</div><div>'+echapper(a.texte)+'</div></div>'
+  ).join('') : '<p class="note">'+t('aucune_annonce')+'</p>';
+  const estHote = !!(idt && idt.hote);
+  document.getElementById('bloc-hote').classList.toggle('cache', !estHote);
+  if(estHote){
+    document.getElementById('h-etat').textContent = tourComplet(joueurs, annonces) ? t('tour_complet') : t('tour_incomplet') + ' (' + annonces.filter(a=>a.statut==='envoyee').length + '/' + joueurs.length + ')';
+    document.getElementById('btn-pause').textContent = m.statut==='pause' ? t('reprendre') : t('pause');
+  }
+  if(m.mode==='solo' && joueurs.length<=1) document.getElementById('h-etat').textContent += ' ' + t('solo_note');
+  document.getElementById('m-journal').innerHTML = resolutions.length ? resolutions.map(r=>
+    '<div class="resolution"><div class="rtitre">'+t('tour_n')+' '+r.tour+'</div><div>'+echapper(r.texte)+'</div>'
+    + (r.texte_des ? '<div class="des-bloc">🎲 '+echapper(r.texte_des)+'</div>' : '') + '</div>'
+  ).join('') : '<p class="note">'+t('aucune_resolution')+'</p>';
+  const lectureSeule = m.statut==='archive';
+  document.getElementById('btn-poster').disabled = lectureSeule;
+  document.getElementById('btn-resoudre').disabled = lectureSeule;
+}
+
+async function posterAnnonce(){
+  const texte = document.getElementById('a-texte').value.trim();
+  if(!texte){ document.getElementById('a-note').textContent = t('annonce_vide'); return; }
+  await DB.posterAnnonce({ id: MODE_SUPABASE ? undefined : nouvelId(), monde_code: mondeCourant.code,
+    tour: mondeCourant.tour_courant, joueur_id: identiteCourante.joueur_id, texte, statut:'envoyee' });
+  await rafraichirMonde();
+}
+async function resoudreTour(){
+  const texte = document.getElementById('h-texte').value.trim();
+  if(!texte){ alert(t('resolution_vide')); return; }
+  const joueurs = await DB.listerJoueurs(mondeCourant.code);
+  const annonces = await DB.listerAnnonces(mondeCourant.code, mondeCourant.tour_courant);
+  if(!tourComplet(joueurs, annonces) && !confirm(t('confirme_incomplet'))) return;
+  const texteDes = document.getElementById('h-des').value.trim();
+  const r = { monde_code: mondeCourant.code, tour: mondeCourant.tour_courant, texte, texte_des: texteDes || null };
+  if(!MODE_SUPABASE) r.id = nouvelId();
+  await DB.posterResolution(r);
+  document.getElementById('h-texte').value='';
+  document.getElementById('h-des').value='';
+  await rafraichirMonde();
+}
+
+/* ---------- démarrage ---------- */
+function remplirSelectsLangue(){
+  document.querySelectorAll('.select-langue').forEach(sel=>{
+    sel.innerHTML = LANGUES.map(l=>'<option value="'+l.code+'">'+l.nom+'</option>').join('');
+    sel.value = I18N[uiLang] ? uiLang : 'fr';
+  });
+}
+document.getElementById('btn-vers-creer').addEventListener('click', ()=>montrer('ecran-creer'));
+document.getElementById('btn-vers-rejoindre').addEventListener('click', ()=>montrer('ecran-rejoindre'));
+document.querySelectorAll('[data-retour]').forEach(b=>b.addEventListener('click', ()=>{ montrer('ecran-accueil'); rendreAccueil(); }));
+document.getElementById('btn-creer-monde').addEventListener('click', creerMonde);
+document.getElementById('btn-rejoindre-monde').addEventListener('click', rejoindreMonde);
+document.getElementById('btn-entrer-monde').addEventListener('click', ()=>{ if(mondeCourant) entrerDansMonde(mondeCourant.code); });
+document.getElementById('btn-quitter').addEventListener('click', ()=>{ if(minuteur) clearInterval(minuteur); mondeCourant=null; montrer('ecran-accueil'); rendreAccueil(); });
+document.getElementById('btn-poster').addEventListener('click', posterAnnonce);
+document.getElementById('btn-resoudre').addEventListener('click', resoudreTour);
+document.getElementById('btn-rafraichir').addEventListener('click', ()=>rafraichirMonde());
+document.getElementById('btn-pause').addEventListener('click', async ()=>{ if(!mondeCourant) return; await DB.setStatutMonde(mondeCourant.code, mondeCourant.statut==='pause' ? 'actif' : 'pause'); rafraichirMonde(); });
+document.getElementById('btn-archiver').addEventListener('click', async ()=>{ if(!mondeCourant) return; await DB.setStatutMonde(mondeCourant.code, 'archive'); rafraichirMonde(); });
+
+remplirSelectsLangue();
+appliquerI18n();
+rendreAccueil();
+const codeLien = new URLSearchParams(location.search).get('code');
+if(codeLien){
+  const c = codeLien.toUpperCase();
+  if(identiteDu(c)) entrerDansMonde(c);
+  else { montrer('ecran-rejoindre'); document.getElementById('rj-code').value = c; }
+}
+</script>
+</body>
+</html>
