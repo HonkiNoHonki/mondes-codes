@@ -344,6 +344,7 @@
         <div class="note"><span id="m-code"></span> · <span id="m-tour"></span></div>
       </div>
       <button class="btn btn-fantome btn-petit" id="btn-notif" title="Notifications">🔔 <span data-i18n="nav_notif">Notif</span></button>
+      <button class="btn btn-fantome btn-petit" id="btn-son" title="Son / Music">🔊</button>
       <button class="btn btn-fantome btn-petit" id="btn-quitter" data-i18n="btn_quitter">Quitter</button>
     </div>
     <div id="m-chips"></div>
@@ -1712,6 +1713,67 @@ function pastilleStatut(pk){
   return '<span class="statut-pastille">' + ico + ' ' + echapper(st) + '</span>';
 }
 function spriteDos(nom){ const n = numeroDex(nom); return n ? 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-i/yellow/back/' + n + '.png' : ''; }
+/* ---------- musique chiptune (WebAudio, mélodies originales) ---------- */
+const MUS = { ctx: null, timer: null, etape: 0, theme: null, prochain: 0 };
+const THEMES_MUS = {
+  ville:  { tempo: 96,  onde: 'triangle', vol: 0.055, mel: [72,0,76,0,79,0,76,0,74,0,77,0,81,0,77,0], basse: [48,0,0,0,55,0,0,0,50,0,0,0,55,0,0,0] },
+  route:  { tempo: 112, onde: 'square',   vol: 0.04,  mel: [69,0,72,74,76,0,74,72,74,0,76,79,76,0,74,0], basse: [45,0,52,0,45,0,52,0,43,0,50,0,45,0,52,0] },
+  foret:  { tempo: 80,  onde: 'triangle', vol: 0.055, mel: [69,0,0,72,0,0,76,0,74,0,0,72,0,0,0,0], basse: [45,0,0,0,0,0,48,0,43,0,0,0,45,0,0,0] },
+  combat: { tempo: 138, onde: 'sawtooth', vol: 0.032, mel: [64,64,0,67,0,64,70,0,64,64,0,67,0,72,70,67], basse: [40,0,40,40,0,40,0,40,38,0,38,38,0,41,0,43] }
+};
+let sonActif = true;
+try { sonActif = localStorage.getItem('mc_son') !== '0'; } catch(e) {}
+function jouerNote(midi, t, dur, onde, vol){
+  if(!midi || !MUS.ctx) return;
+  const o = MUS.ctx.createOscillator(), g = MUS.ctx.createGain();
+  o.type = onde;
+  o.frequency.value = 440 * Math.pow(2, (midi - 69) / 12);
+  g.gain.setValueAtTime(vol, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(MUS.ctx.destination);
+  o.start(t); o.stop(t + dur + 0.03);
+}
+function planifierMusique(){
+  if(!MUS.ctx || !MUS.theme) return;
+  const th = THEMES_MUS[MUS.theme]; if(!th) return;
+  const pas = 60 / th.tempo / 2;
+  while(MUS.prochain < MUS.ctx.currentTime + 0.14){
+    const i = MUS.etape % 16;
+    jouerNote(th.mel[i], MUS.prochain, pas * 0.92, th.onde, th.vol);
+    jouerNote(th.basse[i], MUS.prochain, pas * 0.92, 'square', th.vol * 0.7);
+    MUS.prochain += pas; MUS.etape++;
+  }
+}
+function demarrerMusique(){
+  if(!sonActif) return;
+  if(MUS.ctx){ if(MUS.ctx.state === 'suspended') MUS.ctx.resume(); return; }
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if(!AC) return;
+  MUS.ctx = new AC();
+  MUS.prochain = MUS.ctx.currentTime + 0.06;
+  MUS.timer = setInterval(planifierMusique, 25);
+}
+function majMusique(combat){
+  const lieu = ((mondeCourant && mondeCourant.etat && mondeCourant.etat.lieu) || '').toLowerCase();
+  let th = 'route';
+  if(combat) th = 'combat';
+  else if(/forêt|foret|forest/.test(lieu)) th = 'foret';
+  else if(/jadielle|argenta|azuria|carmin|céladopole|celadopole|safrania|parmanie|palette|cramois|lavanville|indigo|viridian|pewter|cerulean|vermilion|celadon|saffron|fuchsia|cinnabar|lavender|pallet/.test(lieu)) th = 'ville';
+  if(th !== MUS.theme){
+    MUS.theme = th; MUS.etape = 0;
+    if(MUS.ctx) MUS.prochain = Math.max(MUS.prochain, MUS.ctx.currentTime + 0.05);
+  }
+}
+function majBoutonSon(){ const b = document.getElementById('btn-son'); if(b) b.textContent = sonActif ? '🔊' : '🔇'; }
+function basculerSon(){
+  sonActif = !sonActif;
+  try { localStorage.setItem('mc_son', sonActif ? '1' : '0'); } catch(e) {}
+  majBoutonSon();
+  if(sonActif) demarrerMusique();
+  else if(MUS.ctx) MUS.ctx.suspend();
+}
+document.addEventListener('pointerdown', function(){ if(sonActif && mondeCourant) demarrerMusique(); });
+
 function rendreScene(joueurs, resolutions){
   const zone = document.getElementById('m-scene'); if(!zone) return;
   const titre = document.getElementById('m-scene-titre');
@@ -1767,6 +1829,7 @@ function rendreScene(joueurs, resolutions){
     if(lieu) html += '<p class="note">📍 ' + echapper(lieu) + '</p>';
   }
   zone.innerHTML = html || '<p class="note">' + t('equipe_vide') + '</p>';
+  majMusique(combat);
 }
 
 const BADGE_SLOTS = [
@@ -2002,7 +2065,9 @@ document.querySelectorAll('[data-retour]').forEach(b=>b.addEventListener('click'
 document.getElementById('btn-creer-monde').addEventListener('click', creerMonde);
 document.getElementById('btn-rejoindre-monde').addEventListener('click', rejoindreMonde);
 document.getElementById('btn-entrer-monde').addEventListener('click', ()=>{ if(mondeCourant) entrerDansMonde(mondeCourant.code); });
-document.getElementById('btn-quitter').addEventListener('click', ()=>{ if(minuteur) clearInterval(minuteur); mondeCourant=null; montrer('ecran-accueil'); rendreAccueil(); });
+document.getElementById('btn-quitter').addEventListener('click', ()=>{ if(minuteur) clearInterval(minuteur); if(MUS.ctx) MUS.ctx.suspend(); MUS.theme = null; mondeCourant=null; montrer('ecran-accueil'); rendreAccueil(); });
+document.getElementById('btn-son').addEventListener('click', basculerSon);
+majBoutonSon();
 document.getElementById('btn-poster').addEventListener('click', posterAnnonce);
 document.getElementById('btn-resoudre').addEventListener('click', resoudreTour);
 document.getElementById('btn-accroche').addEventListener('click', sauverAccroche);
