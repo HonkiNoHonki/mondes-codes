@@ -92,6 +92,15 @@
     background:var(--carte); border:3px solid var(--bord); border-top:10px solid var(--accent); border-radius:var(--rayon);
     padding:13px 15px; margin-bottom:12px; box-shadow:0 4px 0 rgba(32,48,79,.4)}
   .entete-monde h2{margin:0; font-size:22px; line-height:1.25}
+  .conn-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#9a9a9a;margin-left:6px;vertical-align:middle}
+  .conn-dot.ok{background:#3fbf4f}
+  .conn-dot.ko{background:#e5484d}
+  .dex-case.vu{border-color:#b98a2f;background:rgba(185,138,47,.12)}
+  .depot-titre{margin:12px 0 4px;font-size:14px}
+  .sac-cat{margin:12px 0 4px;font-size:14px}
+  .sac-ligne{cursor:pointer}
+  .sac-detail{padding:2px 10px 10px 46px}
+  .pnj-recherche{width:100%;padding:9px 12px;border-radius:10px;border:1px solid #bbb;margin:4px 0 10px;font-size:15px;box-sizing:border-box}
   .lien{color:var(--accent2); word-break:break-all; font-size:13px; font-weight:600}
   .separateur{border:none; border-top:2px solid rgba(32,48,79,.18); margin:16px 0}
 
@@ -341,7 +350,7 @@
     <div class="entete-monde">
       <div>
         <h2 id="m-nom"></h2>
-        <div class="note"><span id="m-code"></span> · <span id="m-tour"></span></div>
+        <div class="note"><span id="m-code"></span> · <span id="m-tour"></span><span id="m-conn" class="conn-dot" title=""></span></div>
       </div>
       <button class="btn btn-fantome btn-petit" id="btn-notif" title="Notifications">🔔 <span data-i18n="nav_notif">Notif</span></button>
       <button class="btn btn-fantome btn-petit" id="btn-son" title="Son / Music">🔊</button>
@@ -360,6 +369,12 @@
     <div class="carte" id="bloc-scene">
       <h3 id="m-scene-titre">📍 <span data-i18n="scene_titre">En ce moment</span></h3>
       <div id="m-scene"></div>
+    </div>
+
+    <div class="carte cache" id="bloc-lastres">
+      <h3>🎲 <span data-i18n="lastres_titre">Dernier résultat</span></h3>
+      <div id="m-lastres"></div>
+      <button class="btn btn-fantome btn-petit" data-page="ecran-journal">📖 <span data-i18n="lastres_journal">Lire dans le Journal</span></button>
     </div>
 
     <div class="carte cache" id="bloc-propositions">
@@ -441,6 +456,7 @@
 
     <div class="carte">
       <h3 data-i18n="pnj_titre">Personnages rencontrés</h3>
+      <input id="pnj-recherche" class="pnj-recherche" type="search" data-i18n-ph="pnj_recherche_ph" placeholder="🔎 Rechercher un personnage…">
       <div id="m-pnj"></div>
     </div>
   </section>
@@ -573,8 +589,8 @@ const LANGUES = [
 ];
 
 const I18N = {
-fr:{app_titre:'Mondes & Codes',app_sous:'Chant & Festin entre amis — un monde, un code, une aventure.',bandeau_local:'Mode démo local : la partie vit sur cet appareil (la synchro entre téléphones arrive avec le projet Supabase dédié).',btn_creer:'✨ Créer un monde',btn_rejoindre:'🔑 Rejoindre avec un code',mes_mondes:'Mes mondes sur cet appareil',creer_titre:'Créer un monde',lbl_nom_campagne:'Nom de la campagne',lbl_region:'Région de départ (saison 1)',lbl_mode:'Mode',lbl_max:'Nombre de joueurs max',lbl_ton:'Ton du monde',lbl_langue_defaut:'Langue par défaut du monde',ton_perso:"Toi, l'hôte",lbl_nom_dresseur:'Ton nom de dresseur',lbl_ta_langue:'Ta langue',btn_creer_monde:'Créer le monde',btn_retour:'← Retour',code_titre:'Ton monde est prêt !',code_explique:'Donne ce code à tes amis : ils ouvrent l\u2019app, « Rejoindre », tapent le code, et ils sont dans la partie.',lien_invitation:'Lien d\u2019invitation :',btn_entrer:'Entrer dans le monde →',rejoindre_titre:'Rejoindre un monde',lbl_code:'Code du monde',lbl_nom_dresseur2:'Ton nom de dresseur',lbl_ta_langue2:'Ta langue',btn_rejoindre_monde:'Rejoindre',btn_retour2:'← Retour',btn_quitter:'Quitter',joueurs_titre:'Dresseurs',personnages_titre:'Personnages',btn_mon_perso:'🧍 Mon personnage — créer / modifier',perso_titre:'Création de personnage',perso_apparence:'Apparence',perso_visage:'Visage & cheveux',perso_style:'Style & détails',lbl_avatar:"Couleur d'avatar",lbl_age:'Âge',lbl_taille:'Taille',lbl_corpulence:'Corpulence',lbl_peau:'Teint de peau',lbl_cheveux_couleur:'Couleur de cheveux',lbl_cheveux_longueur:'Longueur de cheveux',lbl_coiffure:'Coiffure',lbl_yeux:'Couleur des yeux',lbl_visage:'Visage (optionnel)',lbl_tenue:'Tenue habituelle',lbl_accessoire:'Accessoire fétiche',lbl_signe:'Signe particulier',lbl_description:'Description libre',btn_sauver_perso:'✔ Enregistrer mon personnage',btn_retour_monde:'← Retour au monde',fiche_vide:'Fiche non remplie pour le moment.',voir_fiche:'Voir la fiche',perso_sauve:'Personnage enregistré ✔',perso_sauve_local:'Personnage enregistré sur cet appareil ✔ (la synchro entre téléphones arrivera quand la colonne « physique » sera ajoutée dans Supabase).',equipe_titre:'Équipe',equipe_vide:'Aucun Pokémon pour le moment — ton équipe apparaîtra ici automatiquement dès que ton premier Pokémon te rejoindra.',emplacement_vide:'Emplacement vide',ton_annonce:'Ton annonce — tour',annonce_ph:'Que fais-tu ce tour-ci ?',btn_poster:'📣 Poster mon annonce',annonces_titre:'Annonces du tour',hote_titre:"🎲 Panneau de l'hôte — MJ manuel (Phase 1)",lbl_resolution:'Résolution du tour',btn_resoudre:'✔ Résoudre le tour et passer au suivant',btn_archiver:'Archiver le monde',journal_titre:'📖 Journal des résolutions',btn_rafraichir:'↻ Rafraîchir',tour_n:'Tour',a_annonce:'a annoncé',en_attente:'en attente',aucune_annonce:'Aucune annonce pour le moment.',aucune_resolution:'Aucune résolution pour le moment.',tour_complet:'✅ Tour complet : tout le monde a annoncé, tu peux résoudre.',tour_incomplet:'⏳ Annonces en cours…',hote_badge:'hôte',toi:'toi',erreur_nom_vide:'Écris un nom de campagne et ton nom de dresseur.',erreur_code_vide:'Écris le code du monde et ton nom de dresseur.',erreur_code_inconnu:'Code inconnu : aucun monde ne porte ce code.',erreur_monde_plein:'Ce monde est plein.',erreur_nom_pris:'Ce nom de dresseur est déjà pris dans ce monde.',reprendre_question:'Ce dresseur existe déjà dans ce monde. Si c’est toi (app installée, nouvel appareil, autre navigateur…), tape OK pour reprendre ton dresseur sur cet appareil.',erreur_reseau:'Connexion impossible pour le moment.',annonce_postee:'Annonce postée ✔ — tu peux la modifier tant que le tour n\u2019est pas résolu.',annonce_vide:'Écris d\u2019abord ton annonce.',resolution_vide:'Écris d\u2019abord la résolution.',confirme_incomplet:'Le tour n\u2019est pas complet. Résoudre quand même ?',pause:'⏸ Mettre en pause',reprendre:'▶ Reprendre',monde_en_pause:'⏸ Ce monde est en pause.',monde_archive_msg:'🗄 Ce monde est archivé (lecture seule).',solo_note:'Mode solo : le rival IA arrive en Phase 2 — pour l\u2019instant, l\u2019hôte résout seul.',region:'Région',saison:'Saison',ton_leger:'Léger',ton_sombre:'Sombre',lbl_des:'Déroulé des dés (optionnel — affiché en petit, après le récit)',des_ph:'Un jet par ligne : Axel — face 14 +1 = 15 NETTE',charte_titre:'📜 Charte du MJ (§13 du plan)',charte_1:'Rythme : aucun arc sans bascule au bout de quelques tours.',charte_2:'Porte fermée : annonce-la dans la résolution du même tour.',charte_3:'Chance unique : signale-la avant l\u2019action des joueurs.',charte_4:'Rareté : donne toujours sa fréquence (une fois par an, saisonnier, récurrent, jamais), via un PNJ ou le narrateur, avant les tentatives.',charte_5:'Contexte : énonce les règles du monde avant que les joueurs dépensent leurs tours.',charte_6:'Pas de fil fantôme : aucun fil de plusieurs tours autour de qui ne rejoindra jamais le groupe.',situation_titre:'Ce qui se passe',scene_titre:'En ce moment',scene_combat:'Le combat',accroche_defaut:'Bienvenue dans « {nom} » ! Votre aventure à {region} commence : un premier Pokémon à choisir, une première route à explorer… et déjà, quelque chose d’anormal se prépare au loin. Que faites-vous ?',lbl_accroche:'Phrase d’accroche — ce qui se passe (visible par tous les joueurs)',accroche_ph:'Où sont les dresseurs ? Que se passe-t-il ? Quel est l’enjeu du tour ?',btn_accroche:'📜 Mettre à jour l’accroche',accroche_maj:'Accroche mise à jour ✔',btn_mj_ia:'🤖 MJ IA : résoudre le tour',mj_reflechit:'🤖 Le MJ IA réfléchit… (quelques secondes)',mj_fait:'🤖 Tour résolu par le MJ IA ✔',mj_erreur:'Le MJ IA n’a pas répondu — réessaie, ou résous le tour à la main.',mj_indispo:'MJ IA : disponible quand le monde est synchronisé (Supabase).',nav_jouer:'Jouer',nav_equipes:'Équipes',nav_journal:'Journal',nav_persos:'Persos',nav_carte:'Carte',nav_dex:'Dex',nav_notif:'Notif',nav_sac:'Sac',nav_quetes:'Quêtes',sac_titre:'Sac — objets',sac_vide:'Ton sac ne contient encore aucun objet enregistré. Les objets gagnés dans l’aventure apparaîtront ici.',quetes_titre:'Quêtes',quete_en_cours:'Quête en cours',quetes_chapitres:'Chapitres terminés : {x}',passeport_titre:'Passeport du dresseur',des_masque:'🎲 Lance tous les dés du tour pour révéler le récit',props_titre:'Choix du MJ',props_note:"Touche une proposition pour l'ajouter à ton annonce (2 max).",pnj_titre:'Personnages rencontrés',pnj_vide:'Aucun personnage rencontré pour le moment.',quetes_faites:'Terminées',sac_mj_note:'Les objets sont gérés par le MJ : ce que tu gagnes dans l’histoire arrive ici tout seul.',chercheur_actif:'📡 Cherch’Objet actif : il bipera dans le récit dès qu’un objet à ramasser est proche.',notif_ok:'🔔 Notifications activées pour ce monde ✔',notif_refusee:'Notifications refusées — vérifie les réglages de ton téléphone.',notif_installe:'Sur iPhone, les notifications vivent dans l’app installée : ouvre Mondes & Codes depuis l’icône de ton écran d’accueil (pas depuis l’onglet du navigateur), puis retape 🔔.',notif_non_supporte:'Les notifications ne sont pas supportées par ce navigateur.',notif_activees:'Activées ✔',carte_titre:'Carte — itinéraire de Kanto',carte_note:'Touche un lieu pour ses infos. Ta position pulse en rouge ; les lieux déjà visités sont en couleur.',carte_ici:'Tu es ici',carte_visite:'Déjà visité',carte_a_decouvrir:'À découvrir',carte_touche:'Touche une épingle pour voir les infos du lieu.',dex_titre:'Pokédex — Génération 1',dex_note:'En vert : les Pokémon présents dans les équipes de ce monde. Les autres restent à rencontrer…',dex_compteur:'{x} / 151 dans les équipes de ce monde',carte_autre_region:'La carte détaillée arrive pour cette région ; pour l’instant, suis la situation du tour.'},
-en:{app_titre:'Worlds & Codes',app_sous:'Chant & Festin with friends — one world, one code, one adventure.',bandeau_local:'Local demo mode: the game lives on this device (cross-phone sync comes with the dedicated Supabase project).',btn_creer:'✨ Create a world',btn_rejoindre:'🔑 Join with a code',mes_mondes:'My worlds on this device',creer_titre:'Create a world',lbl_nom_campagne:'Campaign name',lbl_region:'Starting region (season 1)',lbl_mode:'Mode',lbl_max:'Max players',lbl_ton:'World tone',lbl_langue_defaut:'World default language',ton_perso:'You, the host',lbl_nom_dresseur:'Your trainer name',lbl_ta_langue:'Your language',btn_creer_monde:'Create the world',btn_retour:'← Back',code_titre:'Your world is ready!',code_explique:'Give this code to your friends: they open the app, tap “Join”, enter the code, and they are in.',lien_invitation:'Invite link:',btn_entrer:'Enter the world →',rejoindre_titre:'Join a world',lbl_code:'World code',lbl_nom_dresseur2:'Your trainer name',lbl_ta_langue2:'Your language',btn_rejoindre_monde:'Join',btn_retour2:'← Back',btn_quitter:'Leave',joueurs_titre:'Trainers',personnages_titre:'Characters',btn_mon_perso:'🧍 My character — create / edit',perso_titre:'Character creation',perso_apparence:'Appearance',perso_visage:'Face & hair',perso_style:'Style & details',lbl_avatar:'Avatar colour',lbl_age:'Age',lbl_taille:'Height',lbl_corpulence:'Build',lbl_peau:'Skin tone',lbl_cheveux_couleur:'Hair colour',lbl_cheveux_longueur:'Hair length',lbl_coiffure:'Hairstyle',lbl_yeux:'Eye colour',lbl_visage:'Face (optional)',lbl_tenue:'Usual outfit',lbl_accessoire:'Signature accessory',lbl_signe:'Distinguishing feature',lbl_description:'Free description',btn_sauver_perso:'✔ Save my character',btn_retour_monde:'← Back to the world',fiche_vide:'Character sheet not filled in yet.',voir_fiche:'View sheet',perso_sauve:'Character saved ✔',perso_sauve_local:'Character saved on this device ✔ (cross-phone sync will work once the “physique” column is added in Supabase).',equipe_titre:'Team',equipe_vide:'No Pokémon yet — your team will appear here automatically as soon as your first Pokémon joins you.',emplacement_vide:'Empty slot',ton_annonce:'Your announcement — turn',annonce_ph:'What do you do this turn?',btn_poster:'📣 Post my announcement',annonces_titre:'This turn\u2019s announcements',hote_titre:'🎲 Host panel — manual GM (Phase 1)',lbl_resolution:'Turn resolution',btn_resoudre:'✔ Resolve the turn and move on',btn_archiver:'Archive the world',journal_titre:'📖 Resolution journal',btn_rafraichir:'↻ Refresh',tour_n:'Turn',a_annonce:'has announced',en_attente:'waiting',aucune_annonce:'No announcements yet.',aucune_resolution:'No resolutions yet.',tour_complet:'✅ Turn complete: everyone has announced, you can resolve.',tour_incomplet:'⏳ Announcements in progress…',hote_badge:'host',toi:'you',erreur_nom_vide:'Enter a campaign name and your trainer name.',erreur_code_vide:'Enter the world code and your trainer name.',erreur_code_inconnu:'Unknown code: no world has this code.',erreur_monde_plein:'This world is full.',erreur_nom_pris:'That trainer name is already taken in this world.',reprendre_question:'This trainer already exists in this world. If that is you (installed app, new device, different browser…), tap OK to reclaim your trainer on this device.',erreur_reseau:'Connection failed for now.',annonce_postee:'Announcement posted ✔ — you can edit it until the turn is resolved.',annonce_vide:'Write your announcement first.',resolution_vide:'Write the resolution first.',confirme_incomplet:'The turn is not complete. Resolve anyway?',pause:'⏸ Pause',reprendre:'▶ Resume',monde_en_pause:'⏸ This world is paused.',monde_archive_msg:'🗄 This world is archived (read-only).',solo_note:'Solo mode: the AI rival arrives in Phase 2 — for now, the host resolves alone.',region:'Region',saison:'Season',ton_leger:'Light',ton_sombre:'Dark',lbl_des:'Dice log (optional — shown small, after the story)',des_ph:'One roll per line: Axel — face 14 +1 = 15 CLEAN SUCCESS',charte_titre:'📜 GM charter (plan §13)',charte_1:'Pacing: no arc without a turning point after a few turns.',charte_2:'Closed door: announce it in the same turn\u2019s resolution.',charte_3:'One-time chance: flag it before the players act.',charte_4:'Rarity: always give its frequency (once a year, seasonal, recurring, never), via an NPC or the narrator, before attempts.',charte_5:'Context: state the world\u2019s rules before players spend turns on them.',charte_6:'No ghost thread: no multi-turn thread around someone who will never join the group.',situation_titre:'What is happening',scene_titre:'Right now',scene_combat:'Battle',accroche_defaut:'Welcome to “{nom}”! Your adventure in {region} begins: a first Pokémon to choose, a first route to explore… and already, something unusual is brewing far away. What do you do?',lbl_accroche:'Hook line — what is happening (visible to all players)',accroche_ph:'Where are the trainers? What is happening? What is at stake this turn?',btn_accroche:'📜 Update the hook',accroche_maj:'Hook updated ✔',btn_mj_ia:'🤖 AI GM: resolve the turn',mj_reflechit:'🤖 The AI GM is thinking… (a few seconds)',mj_fait:'🤖 Turn resolved by the AI GM ✔',mj_erreur:'The AI GM did not answer — try again, or resolve the turn manually.',mj_indispo:'AI GM: available when the world is synced (Supabase).',nav_jouer:'Play',nav_equipes:'Teams',nav_journal:'Journal',nav_persos:'Characters',nav_carte:'Map',nav_dex:'Dex',nav_notif:'Alerts',nav_sac:'Bag',nav_quetes:'Quests',sac_titre:'Bag — items',sac_vide:'Your bag has no recorded items yet. Items earned during the adventure will appear here.',quetes_titre:'Quests',quete_en_cours:'Current quest',quetes_chapitres:'Completed chapters: {x}',passeport_titre:'Trainer passport',des_masque:'🎲 Roll every die of this turn to reveal the story',props_titre:'GM choices',props_note:'Tap a suggestion to add it to your announcement (max 2).',pnj_titre:'Characters met',pnj_vide:'No characters met yet.',quetes_faites:'Completed',sac_mj_note:'Items are managed by the GM: what you earn in the story shows up here on its own.',chercheur_actif:'📡 Itemfinder on: it will beep in the story whenever a pickable item is nearby.',notif_ok:'🔔 Notifications enabled for this world ✔',notif_refusee:'Notifications denied — check your phone settings.',notif_installe:'On iPhone, notifications live in the installed app: open Worlds & Codes from your Home Screen icon (not the browser tab), then tap 🔔 again.',notif_non_supporte:'Notifications are not supported by this browser.',notif_activees:'On ✔',carte_titre:'Map — Kanto itinerary',carte_note:'Tap a place for its info. Your position pulses in red; places already visited are in colour.',carte_ici:'You are here',carte_visite:'Already visited',carte_a_decouvrir:'Not yet visited',carte_touche:'Tap a pin to see the place’s info.',dex_titre:'Pokédex — Generation 1',dex_note:'In green: Pokémon currently in this world’s teams. The rest are still out there…',dex_compteur:'{x} / 151 in this world’s teams',carte_autre_region:'The detailed map is coming for this region; for now, follow the turn’s situation.'}
+fr:{app_titre:'Mondes & Codes',app_sous:'Chant & Festin entre amis — un monde, un code, une aventure.',bandeau_local:'Mode démo local : la partie vit sur cet appareil (la synchro entre téléphones arrive avec le projet Supabase dédié).',btn_creer:'✨ Créer un monde',btn_rejoindre:'🔑 Rejoindre avec un code',mes_mondes:'Mes mondes sur cet appareil',creer_titre:'Créer un monde',lbl_nom_campagne:'Nom de la campagne',lbl_region:'Région de départ (saison 1)',lbl_mode:'Mode',lbl_max:'Nombre de joueurs max',lbl_ton:'Ton du monde',lbl_langue_defaut:'Langue par défaut du monde',ton_perso:"Toi, l'hôte",lbl_nom_dresseur:'Ton nom de dresseur',lbl_ta_langue:'Ta langue',btn_creer_monde:'Créer le monde',btn_retour:'← Retour',code_titre:'Ton monde est prêt !',code_explique:'Donne ce code à tes amis : ils ouvrent l\u2019app, « Rejoindre », tapent le code, et ils sont dans la partie.',lien_invitation:'Lien d\u2019invitation :',btn_entrer:'Entrer dans le monde →',rejoindre_titre:'Rejoindre un monde',lbl_code:'Code du monde',lbl_nom_dresseur2:'Ton nom de dresseur',lbl_ta_langue2:'Ta langue',btn_rejoindre_monde:'Rejoindre',btn_retour2:'← Retour',btn_quitter:'Quitter',joueurs_titre:'Dresseurs',personnages_titre:'Personnages',btn_mon_perso:'🧍 Mon personnage — créer / modifier',perso_titre:'Création de personnage',perso_apparence:'Apparence',perso_visage:'Visage & cheveux',perso_style:'Style & détails',lbl_avatar:"Couleur d'avatar",lbl_age:'Âge',lbl_taille:'Taille',lbl_corpulence:'Corpulence',lbl_peau:'Teint de peau',lbl_cheveux_couleur:'Couleur de cheveux',lbl_cheveux_longueur:'Longueur de cheveux',lbl_coiffure:'Coiffure',lbl_yeux:'Couleur des yeux',lbl_visage:'Visage (optionnel)',lbl_tenue:'Tenue habituelle',lbl_accessoire:'Accessoire fétiche',lbl_signe:'Signe particulier',lbl_description:'Description libre',btn_sauver_perso:'✔ Enregistrer mon personnage',btn_retour_monde:'← Retour au monde',fiche_vide:'Fiche non remplie pour le moment.',voir_fiche:'Voir la fiche',perso_sauve:'Personnage enregistré ✔',perso_sauve_local:'Personnage enregistré sur cet appareil ✔ (la synchro entre téléphones arrivera quand la colonne « physique » sera ajoutée dans Supabase).',equipe_titre:'Équipe',equipe_vide:'Aucun Pokémon pour le moment — ton équipe apparaîtra ici automatiquement dès que ton premier Pokémon te rejoindra.',emplacement_vide:'Emplacement vide',ton_annonce:'Ton annonce — tour',annonce_ph:'Que fais-tu ce tour-ci ?',btn_poster:'📣 Poster mon annonce',annonces_titre:'Annonces du tour',hote_titre:"🎲 Panneau de l'hôte — MJ manuel (Phase 1)",lbl_resolution:'Résolution du tour',btn_resoudre:'✔ Résoudre le tour et passer au suivant',btn_archiver:'Archiver le monde',journal_titre:'📖 Journal des résolutions',btn_rafraichir:'↻ Rafraîchir',tour_n:'Tour',a_annonce:'a annoncé',en_attente:'en attente',aucune_annonce:'Aucune annonce pour le moment.',aucune_resolution:'Aucune résolution pour le moment.',tour_complet:'✅ Tour complet : tout le monde a annoncé, tu peux résoudre.',tour_incomplet:'⏳ Annonces en cours…',hote_badge:'hôte',toi:'toi',erreur_nom_vide:'Écris un nom de campagne et ton nom de dresseur.',erreur_code_vide:'Écris le code du monde et ton nom de dresseur.',erreur_code_inconnu:'Code inconnu : aucun monde ne porte ce code.',erreur_monde_plein:'Ce monde est plein.',erreur_nom_pris:'Ce nom de dresseur est déjà pris dans ce monde.',reprendre_question:'Ce dresseur existe déjà dans ce monde. Si c’est toi (app installée, nouvel appareil, autre navigateur…), tape OK pour reprendre ton dresseur sur cet appareil.',erreur_reseau:'Connexion impossible pour le moment.',annonce_postee:'Annonce postée ✔ — tu peux la modifier tant que le tour n\u2019est pas résolu.',annonce_vide:'Écris d\u2019abord ton annonce.',resolution_vide:'Écris d\u2019abord la résolution.',confirme_incomplet:'Le tour n\u2019est pas complet. Résoudre quand même ?',pause:'⏸ Mettre en pause',reprendre:'▶ Reprendre',monde_en_pause:'⏸ Ce monde est en pause.',monde_archive_msg:'🗄 Ce monde est archivé (lecture seule).',solo_note:'Mode solo : le rival IA arrive en Phase 2 — pour l\u2019instant, l\u2019hôte résout seul.',region:'Région',saison:'Saison',ton_leger:'Léger',ton_sombre:'Sombre',lbl_des:'Déroulé des dés (optionnel — affiché en petit, après le récit)',des_ph:'Un jet par ligne : Axel — face 14 +1 = 15 NETTE',charte_titre:'📜 Charte du MJ (§13 du plan)',charte_1:'Rythme : aucun arc sans bascule au bout de quelques tours.',charte_2:'Porte fermée : annonce-la dans la résolution du même tour.',charte_3:'Chance unique : signale-la avant l\u2019action des joueurs.',charte_4:'Rareté : donne toujours sa fréquence (une fois par an, saisonnier, récurrent, jamais), via un PNJ ou le narrateur, avant les tentatives.',charte_5:'Contexte : énonce les règles du monde avant que les joueurs dépensent leurs tours.',charte_6:'Pas de fil fantôme : aucun fil de plusieurs tours autour de qui ne rejoindra jamais le groupe.',situation_titre:'Ce qui se passe',scene_titre:'En ce moment',scene_combat:'Le combat',accroche_defaut:'Bienvenue dans « {nom} » ! Votre aventure à {region} commence : un premier Pokémon à choisir, une première route à explorer… et déjà, quelque chose d’anormal se prépare au loin. Que faites-vous ?',lbl_accroche:'Phrase d’accroche — ce qui se passe (visible par tous les joueurs)',accroche_ph:'Où sont les dresseurs ? Que se passe-t-il ? Quel est l’enjeu du tour ?',btn_accroche:'📜 Mettre à jour l’accroche',accroche_maj:'Accroche mise à jour ✔',btn_mj_ia:'🤖 MJ IA : résoudre le tour',mj_reflechit:'🤖 Le MJ IA réfléchit… (quelques secondes)',mj_fait:'🤖 Tour résolu par le MJ IA ✔',mj_erreur:'Le MJ IA n’a pas répondu — réessaie, ou résous le tour à la main.',mj_indispo:'MJ IA : disponible quand le monde est synchronisé (Supabase).',nav_jouer:'Jouer',nav_equipes:'Équipes',nav_journal:'Journal',nav_persos:'Persos',nav_carte:'Carte',nav_dex:'Dex',nav_notif:'Notif',nav_sac:'Sac',nav_quetes:'Quêtes',sac_titre:'Sac — objets',sac_vide:'Ton sac ne contient encore aucun objet enregistré. Les objets gagnés dans l’aventure apparaîtront ici.',quetes_titre:'Quêtes',quete_en_cours:'Quête en cours',quetes_chapitres:'Chapitres terminés : {x}',lastres_titre:'Dernier résultat',lastres_journal:'Lire dans le Journal',pnj_recherche_ph:'🔎 Rechercher un personnage…',passeport_titre:'Passeport du dresseur',des_masque:'🎲 Lance tous les dés du tour pour révéler le récit',props_titre:'Choix du MJ',props_note:"Touche une proposition pour l'ajouter à ton annonce (2 max).",pnj_titre:'Personnages rencontrés',pnj_vide:'Aucun personnage rencontré pour le moment.',quetes_faites:'Terminées',sac_mj_note:'Les objets sont gérés par le MJ : ce que tu gagnes dans l’histoire arrive ici tout seul.',chercheur_actif:'📡 Cherch’Objet actif : il bipera dans le récit dès qu’un objet à ramasser est proche.',notif_ok:'🔔 Notifications activées pour ce monde ✔',notif_refusee:'Notifications refusées — vérifie les réglages de ton téléphone.',notif_installe:'Sur iPhone, les notifications vivent dans l’app installée : ouvre Mondes & Codes depuis l’icône de ton écran d’accueil (pas depuis l’onglet du navigateur), puis retape 🔔.',notif_non_supporte:'Les notifications ne sont pas supportées par ce navigateur.',notif_activees:'Activées ✔',carte_titre:'Carte — itinéraire de Kanto',carte_note:'Touche un lieu pour ses infos. Ta position pulse en rouge ; les lieux déjà visités sont en couleur.',carte_ici:'Tu es ici',carte_visite:'Déjà visité',carte_a_decouvrir:'À découvrir',carte_touche:'Touche une épingle pour voir les infos du lieu.',dex_titre:'Pokédex — Génération 1',dex_note:'En vert : les Pokémon présents dans les équipes de ce monde. Les autres restent à rencontrer…',dex_compteur:'{x} / 151 dans les équipes de ce monde',carte_autre_region:'La carte détaillée arrive pour cette région ; pour l’instant, suis la situation du tour.'},
+en:{app_titre:'Worlds & Codes',app_sous:'Chant & Festin with friends — one world, one code, one adventure.',bandeau_local:'Local demo mode: the game lives on this device (cross-phone sync comes with the dedicated Supabase project).',btn_creer:'✨ Create a world',btn_rejoindre:'🔑 Join with a code',mes_mondes:'My worlds on this device',creer_titre:'Create a world',lbl_nom_campagne:'Campaign name',lbl_region:'Starting region (season 1)',lbl_mode:'Mode',lbl_max:'Max players',lbl_ton:'World tone',lbl_langue_defaut:'World default language',ton_perso:'You, the host',lbl_nom_dresseur:'Your trainer name',lbl_ta_langue:'Your language',btn_creer_monde:'Create the world',btn_retour:'← Back',code_titre:'Your world is ready!',code_explique:'Give this code to your friends: they open the app, tap “Join”, enter the code, and they are in.',lien_invitation:'Invite link:',btn_entrer:'Enter the world →',rejoindre_titre:'Join a world',lbl_code:'World code',lbl_nom_dresseur2:'Your trainer name',lbl_ta_langue2:'Your language',btn_rejoindre_monde:'Join',btn_retour2:'← Back',btn_quitter:'Leave',joueurs_titre:'Trainers',personnages_titre:'Characters',btn_mon_perso:'🧍 My character — create / edit',perso_titre:'Character creation',perso_apparence:'Appearance',perso_visage:'Face & hair',perso_style:'Style & details',lbl_avatar:'Avatar colour',lbl_age:'Age',lbl_taille:'Height',lbl_corpulence:'Build',lbl_peau:'Skin tone',lbl_cheveux_couleur:'Hair colour',lbl_cheveux_longueur:'Hair length',lbl_coiffure:'Hairstyle',lbl_yeux:'Eye colour',lbl_visage:'Face (optional)',lbl_tenue:'Usual outfit',lbl_accessoire:'Signature accessory',lbl_signe:'Distinguishing feature',lbl_description:'Free description',btn_sauver_perso:'✔ Save my character',btn_retour_monde:'← Back to the world',fiche_vide:'Character sheet not filled in yet.',voir_fiche:'View sheet',perso_sauve:'Character saved ✔',perso_sauve_local:'Character saved on this device ✔ (cross-phone sync will work once the “physique” column is added in Supabase).',equipe_titre:'Team',equipe_vide:'No Pokémon yet — your team will appear here automatically as soon as your first Pokémon joins you.',emplacement_vide:'Empty slot',ton_annonce:'Your announcement — turn',annonce_ph:'What do you do this turn?',btn_poster:'📣 Post my announcement',annonces_titre:'This turn\u2019s announcements',hote_titre:'🎲 Host panel — manual GM (Phase 1)',lbl_resolution:'Turn resolution',btn_resoudre:'✔ Resolve the turn and move on',btn_archiver:'Archive the world',journal_titre:'📖 Resolution journal',btn_rafraichir:'↻ Refresh',tour_n:'Turn',a_annonce:'has announced',en_attente:'waiting',aucune_annonce:'No announcements yet.',aucune_resolution:'No resolutions yet.',tour_complet:'✅ Turn complete: everyone has announced, you can resolve.',tour_incomplet:'⏳ Announcements in progress…',hote_badge:'host',toi:'you',erreur_nom_vide:'Enter a campaign name and your trainer name.',erreur_code_vide:'Enter the world code and your trainer name.',erreur_code_inconnu:'Unknown code: no world has this code.',erreur_monde_plein:'This world is full.',erreur_nom_pris:'That trainer name is already taken in this world.',reprendre_question:'This trainer already exists in this world. If that is you (installed app, new device, different browser…), tap OK to reclaim your trainer on this device.',erreur_reseau:'Connection failed for now.',annonce_postee:'Announcement posted ✔ — you can edit it until the turn is resolved.',annonce_vide:'Write your announcement first.',resolution_vide:'Write the resolution first.',confirme_incomplet:'The turn is not complete. Resolve anyway?',pause:'⏸ Pause',reprendre:'▶ Resume',monde_en_pause:'⏸ This world is paused.',monde_archive_msg:'🗄 This world is archived (read-only).',solo_note:'Solo mode: the AI rival arrives in Phase 2 — for now, the host resolves alone.',region:'Region',saison:'Season',ton_leger:'Light',ton_sombre:'Dark',lbl_des:'Dice log (optional — shown small, after the story)',des_ph:'One roll per line: Axel — face 14 +1 = 15 CLEAN SUCCESS',charte_titre:'📜 GM charter (plan §13)',charte_1:'Pacing: no arc without a turning point after a few turns.',charte_2:'Closed door: announce it in the same turn\u2019s resolution.',charte_3:'One-time chance: flag it before the players act.',charte_4:'Rarity: always give its frequency (once a year, seasonal, recurring, never), via an NPC or the narrator, before attempts.',charte_5:'Context: state the world\u2019s rules before players spend turns on them.',charte_6:'No ghost thread: no multi-turn thread around someone who will never join the group.',situation_titre:'What is happening',scene_titre:'Right now',scene_combat:'Battle',accroche_defaut:'Welcome to “{nom}”! Your adventure in {region} begins: a first Pokémon to choose, a first route to explore… and already, something unusual is brewing far away. What do you do?',lbl_accroche:'Hook line — what is happening (visible to all players)',accroche_ph:'Where are the trainers? What is happening? What is at stake this turn?',btn_accroche:'📜 Update the hook',accroche_maj:'Hook updated ✔',btn_mj_ia:'🤖 AI GM: resolve the turn',mj_reflechit:'🤖 The AI GM is thinking… (a few seconds)',mj_fait:'🤖 Turn resolved by the AI GM ✔',mj_erreur:'The AI GM did not answer — try again, or resolve the turn manually.',mj_indispo:'AI GM: available when the world is synced (Supabase).',nav_jouer:'Play',nav_equipes:'Teams',nav_journal:'Journal',nav_persos:'Characters',nav_carte:'Map',nav_dex:'Dex',nav_notif:'Alerts',nav_sac:'Bag',nav_quetes:'Quests',sac_titre:'Bag — items',sac_vide:'Your bag has no recorded items yet. Items earned during the adventure will appear here.',quetes_titre:'Quests',quete_en_cours:'Current quest',quetes_chapitres:'Completed chapters: {x}',lastres_titre:'Latest result',lastres_journal:'Read in the Journal',pnj_recherche_ph:'🔎 Search a character…',passeport_titre:'Trainer passport',des_masque:'🎲 Roll every die of this turn to reveal the story',props_titre:'GM choices',props_note:'Tap a suggestion to add it to your announcement (max 2).',pnj_titre:'Characters met',pnj_vide:'No characters met yet.',quetes_faites:'Completed',sac_mj_note:'Items are managed by the GM: what you earn in the story shows up here on its own.',chercheur_actif:'📡 Itemfinder on: it will beep in the story whenever a pickable item is nearby.',notif_ok:'🔔 Notifications enabled for this world ✔',notif_refusee:'Notifications denied — check your phone settings.',notif_installe:'On iPhone, notifications live in the installed app: open Worlds & Codes from your Home Screen icon (not the browser tab), then tap 🔔 again.',notif_non_supporte:'Notifications are not supported by this browser.',notif_activees:'On ✔',carte_titre:'Map — Kanto itinerary',carte_note:'Tap a place for its info. Your position pulses in red; places already visited are in colour.',carte_ici:'You are here',carte_visite:'Already visited',carte_a_decouvrir:'Not yet visited',carte_touche:'Tap a pin to see the place’s info.',dex_titre:'Pokédex — Generation 1',dex_note:'In green: Pokémon currently in this world’s teams. The rest are still out there…',dex_compteur:'{x} / 151 in this world’s teams',carte_autre_region:'The detailed map is coming for this region; for now, follow the turn’s situation.'}
 };
 let uiLang = localStorage.getItem('mc_ui_lang') || 'fr';
 function t(cle){ const d = I18N[uiLang] || I18N.fr; return d[cle] || I18N.fr[cle] || cle; }
@@ -797,7 +813,8 @@ async function rafraichirMonde(silencieux){
     const objectifs = await DB.listerObjectifs(mondeCourant.code).catch(function(){ return []; });
     const pnj = await DB.listerPnj(mondeCourant.code).catch(function(){ return []; });
     rendreMonde(joueurs, annonces, resolutions, objectifs, pnj);
-  }catch(e){ if(!silencieux) console.warn(e); }
+    const cdOk = document.getElementById('m-conn'); if(cdOk){ cdOk.className = 'conn-dot ok'; cdOk.title = 'En ligne'; }
+  }catch(e){ if(!silencieux) console.warn(e); const cdKo = document.getElementById('m-conn'); if(cdKo){ cdKo.className = 'conn-dot ko'; cdKo.title = 'Hors ligne'; } }
 }
 
 /* ================= v9 : fiches d'attaques completes (parite Chant & Festin v104) =================
@@ -1199,7 +1216,9 @@ function rendreEquipe(joueurs){
   equipeAffichee = [];
   let html = '<p class="note">' + (uiLang === 'en' ? 'Tap a Pokémon to open its sheet and its moves.' : 'Touche un Pokémon pour ouvrir sa fiche et ses attaques.') + '</p>';
   ordonnes.forEach(function(j){
-    const equipe = equipeDe(j).slice(0, 6);
+    const equipeComplete = equipeDe(j);
+    const equipe = equipeComplete.slice(0, 6);
+    const depot = equipeComplete.slice(6);
     const estMoi = moi && j.id === moi.id;
     html += '<h4 class="equipe-dresseur">' + echapper(j.nom) + (estMoi ? ' <span class="note">(' + (uiLang === 'en' ? 'you' : 'toi') + ')</span>' : '') + '</h4>';
     if(!equipe.length){
@@ -1227,6 +1246,17 @@ function rendreEquipe(joueurs){
         + (pk.sexe ? ' <span class="poke-niv">'+echapper(pk.sexe)+'</span>' : '')
         + '</div><div class="poke-niv">'+(niv!=='' ? 'N. '+echapper(niv) : '')+'</div>'+barre+txt+pastilleStatut(pk)+'</div></div>';
     }).join('') + '</div>';
+    if(depot.length){
+      html += '<h5 class="depot-titre">🖥️ ' + (uiLang === 'en' ? 'PC Storage' : 'Dépôt PC') + ' (' + depot.length + ')</h5><div class="equipe-grille">' + depot.map(function(pk){
+        const ipk = equipeAffichee.length;
+        equipeAffichee.push(pk);
+        const nom = pk.nom || pk.name || '?';
+        const niv = pk.niveau!=null ? pk.niveau : (pk.niv!=null ? pk.niv : (pk.level!=null ? pk.level : ''));
+        const srcSprite = pk.sprite || spriteGen1(nom);
+        const icone = srcSprite ? '<div class="poke-icone"><img src="'+echapper(srcSprite)+'" alt="" onerror="this.remove()"></div>' : '<div class="poke-icone"></div>';
+        return '<div class="poke-case" style="cursor:pointer" onclick="ouvrirFichePoke('+ipk+')">'+icone+'<div class="poke-infos"><div class="poke-nom">'+echapper(nom)+'</div><div class="poke-niv">'+(niv!=='' ? 'N. '+echapper(niv) : '')+'</div>'+pastilleStatut(pk)+'</div></div>';
+      }).join('') + '</div>';
+    }
   });
   bloc.innerHTML = html;
 }
@@ -1512,19 +1542,25 @@ function rendreCarte(resolutions){
     return '<li><span class="pt">' + (i === ITINERAIRE_KANTO.length - 1 ? '🏆' : '📍') + '</span><span class="ville">' + echapper(en ? e[1] : e[0]) + '</span><span class="badge">' + echapper(en ? e[3] : e[2]) + '</span></li>';
   }).join('') + '</ul>';
 }
-function rendreDex(joueurs){
+function rendreDex(joueurs, resolutions){
   const zone = document.getElementById('m-dex'); if(!zone) return;
   const noms = (uiLang === 'en') ? DEX_EN : DEX_FR;
   const captures = new Set(); const capIds = new Set();
   (joueurs || []).forEach(function(j){ equipeDe(j).forEach(function(pk){ if(pk && pk.nom){ captures.add(nomNormalise(pk.nom)); const nd = numeroDex(pk.nom); if(nd) capIds.add(nd); } }); });
-  let nb = 0;
+  const vusIds = new Set();
+  const nomsConnus = new Set();
+  (joueurs || []).forEach(function(j){ nomsConnus.add(nomNormalise(j.nom)); equipeDe(j).forEach(function(pk){ if(pk && pk.nom) nomsConnus.add(nomNormalise(pk.nom)); }); });
+  (resolutions || []).forEach(function(r){ const ds = analyserDes(r); if(!ds) return; ds.forEach(function(d){ if(d && d.qui && !nomsConnus.has(nomNormalise(d.qui))){ const nd = numeroDex(d.qui); if(nd) vusIds.add(nd); } }); });
+  let nb = 0, nbVus = 0;
   zone.innerHTML = noms.map(function(nom, i){
     const cap = capIds.has(i + 1) || captures.has(nomNormalise(nom)) || captures.has(nomNormalise(DEX_FR[i])) || captures.has(nomNormalise(DEX_EN[i]));
+    const vu = !cap && vusIds.has(i + 1);
+    if(vu) nbVus++;
     if(cap) nb++;
-    return '<div class="dex-case' + (cap ? ' cap' : '') + '"><img class="dex-sprite' + (cap ? '' : ' ombre') + '" src="' + spriteParNumero(i + 1) + '" alt="" loading="lazy" onerror="this.remove()"><div class="num">N° ' + (i + 1) + (cap ? ' ●' : '') + '</div><div class="nom">' + echapper(nom) + '</div></div>';
+    return '<div class="dex-case' + (cap ? ' cap' : (vu ? ' vu' : '')) + '"><img class="dex-sprite' + ((cap || vu) ? '' : ' ombre') + '" src="' + spriteParNumero(i + 1) + '" alt="" loading="lazy" onerror="this.remove()"><div class="num">N° ' + (i + 1) + (cap ? ' ●' : (vu ? ' 👁' : '')) + '</div><div class="nom">' + echapper(nom) + '</div></div>';
   }).join('');
   const cpt = document.getElementById('m-dex-compte');
-  if(cpt) cpt.textContent = t('dex_compteur').replace('{x}', nb);
+  if(cpt) cpt.textContent = t('dex_compteur').replace('{x}', nb) + (nbVus ? ' · 👁 ' + nbVus + (uiLang === 'en' ? ' seen' : ' vues') : '');
 }
 
 /* ---------- pages Sac & Quêtes ---------- */
@@ -1600,12 +1636,36 @@ function iconeObjet(nom){
   if(n.includes('repousse')) return '🌿';
   return '🎒';
 }
+function categorieObjet(nom){
+  const n = nomNormalise(nom);
+  if(n.includes('ball')) return 'balls';
+  if(/potion|rappel|antidote|anti|reveil|guerison|soin|bonbon|limonade|soda|eau fraiche|lait/.test(n)) return 'soins';
+  if(/ct\b|ct\d|disque/.test(n)) return 'ct';
+  if(/pokedex|carte|carnet|cherch|colis|badge|cle|lettre|fossile|ticket|passe|velo|canne|scope|squirt|boite|livre/.test(n)) return 'cles';
+  return 'divers';
+}
+const SAC_CATS = [ ['soins', '💊 Soins', '💊 Care'], ['balls', '⚪ Balls', '⚪ Balls'], ['ct', '💿 CT', '💿 TMs'], ['cles', '🔑 Objets clés', '🔑 Key items'], ['divers', '🎒 Divers', '🎒 Misc'] ];
 function sacHtml(sac){
   if(!sac.length) return '<p class="note">' + t('sac_vide') + '</p>';
-  return sac.map(function(o){
-    return '<div class="sac-ligne">' + iconeObjetHtml(o.nom) + '<span class="sac-nom">' + echapper(o.nom) + '</span><span class="sac-qte">× ' + o.qte + '</span></div>';
-  }).join('');
+  let html = '';
+  SAC_CATS.forEach(function(cat){
+    const items = sac.map(function(o, i){ return {o:o, i:i}; }).filter(function(x){ return categorieObjet(x.o.nom) === cat[0]; });
+    if(!items.length) return;
+    html += '<h4 class="sac-cat">' + (uiLang === 'en' ? cat[2] : cat[1]) + '</h4>';
+    html += items.map(function(x){
+      const o = x.o;
+      return '<div class="sac-ligne" data-sac-idx="' + x.i + '">' + iconeObjetHtml(o.nom) + '<span class="sac-nom">' + echapper(o.nom) + '</span><span class="sac-qte">× ' + o.qte + '</span></div>'
+        + '<div class="sac-detail cache" id="sac-detail-' + x.i + '"><div class="note">' + echapper(o.nom) + ' · × ' + o.qte + ' · ' + (uiLang === 'en' ? cat[2] : cat[1]) + '</div><div class="note">' + (uiLang === 'en' ? 'Managed by the GM.' : 'Objet géré par le MJ.') + '</div></div>';
+    }).join('');
+  });
+  return html;
 }
+document.addEventListener('click', function(ev){
+  const l = ev.target.closest ? ev.target.closest('[data-sac-idx]') : null;
+  if(!l) return;
+  const d = document.getElementById('sac-detail-' + l.getAttribute('data-sac-idx'));
+  if(d) d.classList.toggle('cache');
+});
 /* ---------- dés interactifs (résolutions aux dés structurés) ---------- */
 function analyserDes(r){
   if(!r.texte_des) return null;
@@ -1669,6 +1729,21 @@ let propsSelection = [];
 let propsTour = null;
 let objectifsCourants = [];
 
+function rendreLasRes(resolutions){
+  const bloc = document.getElementById('bloc-lastres'); const zone = document.getElementById('m-lastres');
+  if(!bloc || !zone) return;
+  const rs = (resolutions || []).slice().sort(function(a, b){ return (b.tour || 0) - (a.tour || 0); });
+  if(!rs.length){ bloc.classList.add('cache'); return; }
+  const r = rs[0];
+  const des = analyserDes(r);
+  let html = '<div class="rtitre">' + t('tour_n') + ' ' + r.tour + '</div>';
+  if(des) html += '<div class="des-bloc">' + des.map(function(d){ return echapper(ligneDe(d)); }).join('<br>') + '</div>';
+  else if(r.texte_des) html += '<div class="des-bloc">🎲 ' + echapper(r.texte_des) + '</div>';
+  const txt = String(r.texte || '');
+  html += '<p>' + echapper(txt.slice(0, 240)) + (txt.length > 240 ? '…' : '') + '</p>';
+  zone.innerHTML = html;
+  bloc.classList.remove('cache');
+}
 function rendrePropositions(objectifs){
   const bloc = document.getElementById('bloc-propositions');
   const zone = document.getElementById('m-propositions');
@@ -1890,18 +1965,31 @@ function rendrePasseports(joueurs, resolutions){
 }
 
 /* ---------- PNJ rencontrés ---------- */
+let pnjCourants = [];
 function rendrePnj(pnj){
+  pnjCourants = pnj || [];
+  const inp = document.getElementById('pnj-recherche');
+  afficherPnj(inp ? inp.value : '');
+}
+function afficherPnj(filtre){
   const zone = document.getElementById('m-pnj');
   if(!zone) return;
-  if(!pnj || !pnj.length){ zone.innerHTML = '<p class="note">' + t('pnj_vide') + '</p>'; return; }
+  const f = nomNormalise(filtre || '');
+  const liste = pnjCourants.filter(function(x){ return !f || nomNormalise(x.nom).includes(f) || nomNormalise(x.description || '').includes(f) || nomNormalise(x.camp || '').includes(f); });
+  if(!pnjCourants.length){ zone.innerHTML = '<p class="note">' + t('pnj_vide') + '</p>'; return; }
+  if(!liste.length){ zone.innerHTML = '<p class="note">' + (uiLang === 'en' ? 'No character matches your search.' : 'Aucun personnage ne correspond à la recherche.') + '</p>'; return; }
   const camps = {};
-  pnj.forEach(function(x){ const c = x.camp || 'Autres'; (camps[c] = camps[c] || []).push(x); });
+  liste.forEach(function(x){ const c = x.camp || 'Autres'; (camps[c] = camps[c] || []).push(x); });
   zone.innerHTML = Object.keys(camps).map(function(c){
     return '<h4 class="pnj-camp">' + echapper(c) + '</h4>' + camps[c].map(function(x){
       return '<div class="pnj-ligne"><b>' + echapper(x.nom) + '</b>' + (x.description ? '<div class="note">' + echapper(x.description) + '</div>' : '') + '</div>';
     }).join('');
   }).join('');
 }
+(function(){
+  const inp = document.getElementById('pnj-recherche');
+  if(inp) inp.addEventListener('input', function(){ afficherPnj(inp.value); });
+})();
 
 function rendreSac(joueurs){
   const bloc = document.getElementById('m-sac');
@@ -1965,7 +2053,7 @@ function rendreMonde(joueurs, annonces, resolutions, objectifs, pnj){
   rendreEquipe(joueurs);
   rendrePersonnages(joueurs);
   rendreCarte(resolutions);
-  rendreDex(joueurs); majBoutonNotif(); rendreSac(joueurs); rendreQuetes(resolutions, objectifs); rendrePropositions(objectifs); rendrePnj(pnj); rendrePasseports(joueurs, resolutions); rendreScene(joueurs, resolutions);
+  rendreDex(joueurs, resolutions); majBoutonNotif(); rendreSac(joueurs); rendreQuetes(resolutions, objectifs); rendrePropositions(objectifs); rendrePnj(pnj); rendrePasseports(joueurs, resolutions); rendreScene(joueurs, resolutions); rendreLasRes(resolutions);
   const mienne = annonces.find(a=>idt && a.joueur_id===idt.joueur_id && a.statut==='envoyee');
   const zone = document.getElementById('a-texte');
   if(document.activeElement !== zone) zone.value = mienne ? mienne.texte : '';
@@ -2034,7 +2122,7 @@ async function resoudreParIA(){
     if(data.equipes){
       for(const joueurId of Object.keys(data.equipes)){
         if(Array.isArray(data.equipes[joueurId])){
-          try{ await DB.majEquipe(mondeCourant.code, joueurId, data.equipes[joueurId].slice(0,6)); }catch(e){}
+          try{ await DB.majEquipe(mondeCourant.code, joueurId, data.equipes[joueurId]); }catch(e){}
         }
       }
     }
