@@ -155,6 +155,9 @@
 .banniere-monde{width:100%;display:block;border:3px solid var(--bord);border-radius:16px;box-shadow:0 4px 0 rgba(32,48,79,.4);margin-bottom:12px}
 .sac-ligne{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #d5d5ef;border-radius:12px;padding:8px 10px;margin:6px 0}
 .sac-icone{font-size:22px}
+  .sac-icone-img{position:relative; display:inline-flex; align-items:center; justify-content:center; width:40px; min-height:36px}
+  .sac-fond{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%)}
+  .sac-img{position:relative; z-index:1; width:36px; height:36px; object-fit:contain; image-rendering:pixelated}
 .sac-nom{flex:1;font-weight:700}
 .sac-qte{font-weight:800;color:var(--accent)}
 .sac-btn{width:32px;height:32px;border-radius:50%;border:2px solid var(--bord);background:#eef3fb;font-size:18px;font-weight:800;cursor:pointer;margin-left:4px;line-height:1}
@@ -1416,6 +1419,38 @@ function sacDe(joueur){
   if(Array.isArray(loc)) return loc;
   return SAC_DEFAUT.map(function(o){ return {nom:o.nom, qte:o.qte}; });
 }
+const SPRITES_OBJETS = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/';
+const REGLES_OBJETS = [
+  ['master ball', 'master-ball'], ['hyper ball', 'ultra-ball'], ['super ball', 'great-ball'],
+  ['honor ball', 'premier-ball'], ['premier ball', 'premier-ball'], ['luxe', 'luxury-ball'],
+  ['poke ball', 'poke-ball'], ['pokeball', 'poke-ball'],
+  ['potion max', 'max-potion'], ['hyper potion', 'hyper-potion'], ['super potion', 'super-potion'], ['potion', 'potion'],
+  ['super bonbon', 'rare-candy'], ['rappel max', 'max-revive'], ['rappel', 'revive'],
+  ['antidote', 'antidote'], ['anti-para', 'paralyze-heal'], ['reveil', 'awakening'],
+  ['anti-brule', 'burn-heal'], ['antigel', 'ice-heal'],
+  ['total soin', 'full-heal'], ['guerison', 'full-heal'],
+  ['corde sortie', 'escape-rope'],
+  ['repousse max', 'max-repel'], ['super repousse', 'super-repel'], ['repousse', 'repel'],
+  ['carte', 'town-map'], ['gourde', 'fresh-water'], ['eau fraiche', 'fresh-water'],
+  ['bicyclette', 'bicycle'], ['velo', 'bicycle'],
+  ['mega canne', 'super-rod'], ['super canne', 'good-rod'], ['canne', 'old-rod'],
+  ['jetons', 'coin-case'], ['cherche combat', 'vs-seeker'],
+  ['sylphe', 'silph-scope'], ['scope', 'silph-scope'],
+  ['ascenseur', 'lift-key'], ['magnetique', 'card-key'], ['cle secrete', 'secret-key'],
+  ['commande', 'bike-voucher'], ['dent', 'gold-teeth'],
+  ['bateau', 'ss-ticket'], ['arc-en-ciel', 'rainbow-pass'],
+  ['boite ct', 'tm-case'], ['baies', 'berry-pouch'], ['cherch', 'dowsing-machine']
+];
+function spriteObjet(nom){
+  const n = ' ' + String(nom || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') + ' ';
+  for(const [motif, slug] of REGLES_OBJETS){ if(n.includes(motif)) return SPRITES_OBJETS + slug + '.png'; }
+  return null;
+}
+function iconeObjetHtml(nom){
+  const url = spriteObjet(nom);
+  if(!url) return '<span class="sac-icone">' + iconeObjet(nom) + '</span>';
+  return '<span class="sac-icone sac-icone-img"><span class="sac-fond">' + iconeObjet(nom) + '</span><img class="sac-img" src="' + url + '" alt="" onload="this.previousElementSibling.style.visibility=\'hidden\'" onerror="this.remove()"></span>';
+}
 function iconeObjet(nom){
   const n = nomNormalise(nom);
   if(n.includes('cherch')) return '📡';
@@ -1438,7 +1473,7 @@ function iconeObjet(nom){
 function sacHtml(sac){
   if(!sac.length) return '<p class="note">' + t('sac_vide') + '</p>';
   return sac.map(function(o){
-    return '<div class="sac-ligne"><span class="sac-icone">' + iconeObjet(o.nom) + '</span><span class="sac-nom">' + echapper(o.nom) + '</span><span class="sac-qte">× ' + o.qte + '</span></div>';
+    return '<div class="sac-ligne">' + iconeObjetHtml(o.nom) + '<span class="sac-nom">' + echapper(o.nom) + '</span><span class="sac-qte">× ' + o.qte + '</span></div>';
   }).join('');
 }
 /* ---------- propositions du MJ (objectifs type suggestion) ---------- */
