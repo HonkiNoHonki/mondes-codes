@@ -1444,6 +1444,7 @@ const REGLES_OBJETS = [
 function spriteObjet(nom){
   const n = ' ' + String(nom || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') + ' ';
   if(n.includes('pokedex')) return 'pokedex.png';
+  if(n.includes('carnet')) return 'carnet.png';
   for(const [motif, slug] of REGLES_OBJETS){ if(n.includes(motif)) return SPRITES_OBJETS + slug + '.png'; }
   return null;
 }
