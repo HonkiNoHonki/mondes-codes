@@ -217,7 +217,7 @@
 </style>
 <style>
 /* ===== v9 : fiche Pokemon complete (attaques connues, fiches d'attaques) ===== */
-#fiche-poke{position:fixed;inset:0;background:rgba(18,18,48,.62);z-index:400;overflow-y:auto;padding:12px 10px 96px}
+#fiche-poke{position:fixed;inset:0;background:rgba(18,18,48,.62);z-index:400;overflow-y:auto;padding:max(30px, calc(env(safe-area-inset-top, 0px) + 14px)) 10px 96px}
 #fiche-poke[hidden]{display:none}
 .fiche-carte{background:#fffdf4;border:3px solid #23235f;border-radius:18px;max-width:540px;margin:0 auto;padding:16px 14px;color:#23235f;position:relative;box-shadow:0 10px 30px rgba(0,0,0,.35)}
 .fiche-x{position:absolute;top:8px;right:8px;background:#e3352b;color:#fff;border:2px solid #23235f;border-radius:999px;width:32px;height:32px;font-weight:900;cursor:pointer}
@@ -1026,10 +1026,19 @@ function chargerLearnsetMC(id){
   if(!id || LEARNSETS[id] || LS_EN_COURS[id]) return; LS_EN_COURS[id] = 1;
   fetch('https://pokeapi.co/api/v2/pokemon/' + id).then(r=>{ if(!r.ok) throw new Error('http'); return r.json(); }).then(d=>{
     const det = {};
-    (d.moves || []).forEach(mv=>{ (mv.version_group_details || []).forEach(v=>{
-      if(v.move_learn_method && v.move_learn_method.name === 'level-up' && v.version_group && v.version_group.name === 'scarlet-violet'){
-        const k = mv.move.name; if(det[k] == null || v.level_learned_at < det[k]) det[k] = v.level_learned_at;
-      } }); });
+    const VG_PREF = ['scarlet-violet','sword-shield','lets-go-pikachu-lets-go-eevee','ultra-sun-ultra-moon','sun-moon','x-y','black-2-white-2','black-white','heartgold-soulsilver','platinum','diamond-pearl','firered-leafgreen','emerald','ruby-sapphire','crystal','gold-silver','yellow','red-blue'];
+    (d.moves || []).forEach(mv=>{
+      const parVG = {};
+      (mv.version_group_details || []).forEach(v=>{
+        if(v.move_learn_method && v.move_learn_method.name === 'level-up' && v.version_group){
+          const g = v.version_group.name;
+          if(parVG[g] == null || v.level_learned_at < parVG[g]) parVG[g] = v.level_learned_at;
+        }
+      });
+      const groupes = Object.keys(parVG); if(!groupes.length) return;
+      groupes.sort(function(a, b){ const ia = VG_PREF.indexOf(a), ib = VG_PREF.indexOf(b); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib); });
+      det[mv.move.name] = parVG[groupes[0]];
+    });
     const noms = Object.keys(det); if(!noms.length){ delete LS_EN_COURS[id]; return; }
     Promise.all(noms.map(n=>fetch('https://pokeapi.co/api/v2/move/' + n).then(r=>r.json()).then(md=>{
       const fr = (md.names || []).find(x=>x.language && x.language.name === 'fr');
@@ -1506,11 +1515,11 @@ function rendreCarte(resolutions){
 function rendreDex(joueurs){
   const zone = document.getElementById('m-dex'); if(!zone) return;
   const noms = (uiLang === 'en') ? DEX_EN : DEX_FR;
-  const captures = new Set();
-  (joueurs || []).forEach(function(j){ equipeDe(j).forEach(function(pk){ if(pk && pk.nom) captures.add(nomNormalise(pk.nom)); }); });
+  const captures = new Set(); const capIds = new Set();
+  (joueurs || []).forEach(function(j){ equipeDe(j).forEach(function(pk){ if(pk && pk.nom){ captures.add(nomNormalise(pk.nom)); const nd = numeroDex(pk.nom); if(nd) capIds.add(nd); } }); });
   let nb = 0;
   zone.innerHTML = noms.map(function(nom, i){
-    const cap = captures.has(nomNormalise(nom)) || captures.has(nomNormalise(DEX_FR[i])) || captures.has(nomNormalise(DEX_EN[i]));
+    const cap = capIds.has(i + 1) || captures.has(nomNormalise(nom)) || captures.has(nomNormalise(DEX_FR[i])) || captures.has(nomNormalise(DEX_EN[i]));
     if(cap) nb++;
     return '<div class="dex-case' + (cap ? ' cap' : '') + '"><img class="dex-sprite' + (cap ? '' : ' ombre') + '" src="' + spriteParNumero(i + 1) + '" alt="" loading="lazy" onerror="this.remove()"><div class="num">N° ' + (i + 1) + (cap ? ' ●' : '') + '</div><div class="nom">' + echapper(nom) + '</div></div>';
   }).join('');
