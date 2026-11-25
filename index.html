@@ -1106,7 +1106,7 @@ const btnNotifEl = document.getElementById('btn-notif');
 if(btnNotifEl) btnNotifEl.addEventListener('click', activerNotifications);
 
 /* ===== PWA : service worker ===== */
-if('serviceWorker' in navigator){ window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }); }
+if('serviceWorker' in navigator){ window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').then(function(r){ if(r.update) r.update(); }).catch(()=>{}); }); }
 </script>
 </body>
 </html>
