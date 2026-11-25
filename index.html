@@ -114,8 +114,10 @@
   .recit-flou{filter:blur(6px); opacity:.5; pointer-events:none; user-select:none}
   .passeport-ligne{padding:9px 11px; background:#fff; border:2px solid #d5d5ef; border-radius:12px; margin:6px 0}
   .passeport-nom{font-weight:800; margin-bottom:3px}
-  .badge-slot{display:inline-flex; align-items:center; justify-content:center; width:27px; height:27px; border-radius:50%; border:2px dashed #b9b9d9; margin-right:3px; font-size:14px; color:#b9b9d9}
-  .badge-slot.plein{border:2px solid #b8860b; background:#fff3bf; color:inherit}
+  .badge-slot{display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; margin-right:2px}
+  .badge-img{width:32px; height:32px; image-rendering:pixelated}
+  .badge-gris{filter:grayscale(1); opacity:.28}
+  .badge-slot.plein .badge-img{filter:drop-shadow(0 1px 2px rgba(184,134,11,.55))}
   .poke-case{background:#fff; border:2.5px solid var(--bord); border-radius:12px; padding:8px 9px; display:flex; gap:8px; align-items:center; min-height:64px}
   .poke-case.vide{border-style:dashed; border-color:#9db2d4; color:var(--doux); justify-content:center; text-align:center; font-size:12.5px; font-weight:600}
   .poke-icone{flex:0 0 54px; width:54px; height:54px; border-radius:12px; border:2.5px solid var(--bord);
@@ -1594,6 +1596,16 @@ document.addEventListener('click', function(ev){
 });
 
 /* ---------- passeport du dresseur (badges, argent, stats de dés) ---------- */
+const BADGE_SLOTS = [
+  { noms: ['roche', 'boulder'], f: 'badge-roche.png' },
+  { noms: ['cascade'], f: 'badge-cascade.png' },
+  { noms: ['foudre', 'thunder'], f: 'badge-foudre.png' },
+  { noms: ['arc-en-ciel', 'arc en ciel', 'rainbow', 'prisme'], f: 'badge-arc-en-ciel.png' },
+  { noms: ['âme', 'ame', 'soul'], f: 'badge-ame.png' },
+  { noms: ['marais', 'marsh'], f: 'badge-marais.png' },
+  { noms: ['volcan', 'volcano'], f: 'badge-volcan.png' },
+  { noms: ['terre', 'earth'], f: 'badge-terre.png' }
+];
 function rendrePasseports(joueurs, resolutions){
   const zone = document.getElementById('m-passeports');
   if(!zone) return;
@@ -1614,8 +1626,15 @@ function rendrePasseports(joueurs, resolutions){
   zone.innerHTML = joueurs.map(function(j){
     const pp = (j.passeport && typeof j.passeport === 'object') ? j.passeport : {};
     const badges = Array.isArray(pp.badges) ? pp.badges : [];
+    const parNom = BADGE_SLOTS.map(function(bs){
+      return badges.some(function(b){ const bb = String(b).toLowerCase(); return bs.noms.some(function(n){ return bb.includes(n); }); });
+    });
+    const aucunNom = !parNom.some(Boolean);
     let slots = '';
-    for(let k = 0; k < 8; k++) slots += '<span class="badge-slot' + (k < badges.length ? ' plein' : '') + '">' + (k < badges.length ? '🏅' : '·') + '</span>';
+    for(let k = 0; k < 8; k++){
+      const obtenu = parNom[k] || (aucunNom && k < badges.length);
+      slots += '<span class="badge-slot' + (obtenu ? ' plein' : '') + '"><img class="badge-img' + (obtenu ? '' : ' badge-gris') + '" src="' + BADGE_SLOTS[k].f + '" alt="Badge ' + BADGE_SLOTS[k].noms[0] + '"></span>';
+    }
     const st = stats[j.nom] || null;
     let html = '<div class="passeport-ligne"><div class="passeport-nom">' + echapper(j.nom) + '</div>'
       + '<div class="passeport-badges">' + slots + ' <span class="note">' + badges.length + '/8' + (badges.length ? ' — ' + echapper(badges.join(', ')) : '') + '</span></div>'
