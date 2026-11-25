@@ -2100,7 +2100,7 @@ if(codeLien){
 }
 
 /* ===== Notifications push (bouton 🔔) ===== */
-const VAPID_PUBLIC = 'BAC4uH6Qnsh44PRMEKb6649K0DHM6K_llLw0K3ap8Ed05igu0bgE_l5LJeph9z7YWli2zmbogupCvKWrbP_IPio';
+const VAPID_PUBLIC = 'BD1e11IAHjcLLcrwT-V9AVTDz6DIvnR0KNs3dtCs-12P1A69ZCl36k5no2ojtnqbTGH984tYgZccgs3iFcdSB3M';
 function b64uToBytes(txt){ txt = txt.replace(/-/g,'+').replace(/_/g,'/'); while(txt.length%4) txt+='='; const bin = atob(txt); const arr = new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i); return arr; }
 function notifMsg(txt){ const el = document.getElementById('m-notif-msg'); if(el) el.textContent = txt || ''; }
 function estInstallee(){ return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true; }
