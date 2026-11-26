@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="favicon-64.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="theme-color" content="#23235f">
@@ -206,6 +208,44 @@
 .scene-poke{text-align:center;width:88px}
 .scene-poke img{width:64px;height:64px;image-rendering:pixelated}
 .scene-poke.ko img{filter:grayscale(1);opacity:.55}
+  h1{font-family:'Press Start 2P',ui-monospace,monospace;font-size:19px;line-height:1.55}
+  #m-nom{font-family:'Press Start 2P',ui-monospace,monospace;font-size:16px;line-height:1.5}
+  .carte h3{font-family:'Press Start 2P',ui-monospace,monospace;font-size:12px;line-height:1.7}
+  .scene-terrain{position:relative;border-radius:14px;background-size:cover;background-position:center 32%;padding:12px 8px}
+  .coin{position:absolute;display:flex;flex-direction:column;gap:2px;z-index:3}
+  .coin .cname{font-size:10px;color:#fff;text-shadow:0 1px 3px #000,0 0 6px rgba(0,0,0,.6);font-weight:700}
+  .coin-bl{left:8px;bottom:8px}
+  .coin-br{right:8px;bottom:8px;align-items:flex-end}
+  .coin-tr{right:8px;top:8px;align-items:flex-end}
+  .cballs{display:grid;grid-template-columns:repeat(3,21px);gap:2px}
+  .cball{width:21px;height:21px;display:block}
+  .cball:not(.ko){animation:pbspin 2.6s linear infinite}
+  .cball.ko{filter:grayscale(1) brightness(.32);cursor:pointer}
+  @keyframes pbspin{to{transform:rotate(360deg)}}
+  .scene-poke.pop img{animation:pop .38s ease}
+  @keyframes pop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.12);opacity:1}100%{transform:scale(1);opacity:1}}
+  .scene-poke.hit{animation:hitflash .55s ease;border-radius:12px}
+  @keyframes hitflash{0%,60%{background:rgba(229,72,77,.45)}100%{background:transparent}}
+  #badge-overlay{position:fixed;inset:0;z-index:600;background:rgba(18,14,44,.92);display:flex;align-items:center;justify-content:center}
+  #badge-overlay[hidden]{display:none}
+  .bo-card{text-align:center;color:#fff;padding:20px;position:relative;z-index:2}
+  #bo-media img{width:120px;height:120px;image-rendering:pixelated}
+  #bo-titre{font-family:'Press Start 2P',monospace;font-size:15px;margin-top:14px;line-height:1.7}
+  #bo-sous{margin-top:10px;opacity:.85}
+  .bo-indice{margin-top:18px;font-size:12px;opacity:.6}
+  #bo-confettis{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+  #bo-confettis i{position:absolute;top:-14px;width:9px;height:14px;border-radius:2px;animation:confettiFall linear forwards}
+  @keyframes confettiFall{to{transform:translateY(105vh) rotate(720deg)}}
+  .relrow{display:flex;align-items:center;gap:8px;margin-top:5px;font-size:.8rem;color:var(--doux)}
+  .relgauge{display:inline-flex;gap:3px}
+  .relpip{width:14px;height:8px;border-radius:99px;background:#d5dbea}
+  .relpip.pos{background:#57b368}
+  .relpip.neg{background:#e5484d}
+  .relpip.mid{background:#f6b73c}
+  .enq-bloc{margin-top:8px;border-top:1.5px dashed #c9b8f5;padding-top:7px}
+  .enq-titre{font-weight:800;color:#5b3df0;font-size:.86rem;margin-bottom:4px}
+  .enq-item{margin:3px 0;font-size:.9rem}
+  .enq-item .note{display:block}
 .scene-nom{font-weight:700;font-size:.84rem;color:#23235f}
 .scene-vs{text-align:center;font-size:1.25rem;margin:4px 0}
 .statut-pastille{display:inline-block;background:#efe6ff;border:1.5px solid #8a6fd6;border-radius:999px;padding:0 7px;font-size:.72rem;font-weight:700;margin-top:3px}
@@ -360,6 +400,7 @@
     <div class="pills">
       <button class="pill" data-page="ecran-sac">🎒 <span data-i18n="nav_sac">Sac</span></button>
       <button class="pill" data-page="ecran-quetes">📜 <span data-i18n="nav_quetes">Quêtes</span></button>
+      <button class="pill" id="btn-export">💾 Export</button>
     </div>
     <p id="m-notif-msg" class="note"></p>
     <div class="carte situation">
@@ -494,6 +535,7 @@
   </section>
 
   
+<div id="badge-overlay" hidden><div id="bo-confettis"></div><div class="bo-card"><div id="bo-media"></div><div id="bo-titre"></div><div id="bo-sous"></div><div class="bo-indice">Toucher pour fermer</div></div></div>
 <div id="fiche-poke" hidden>
   <div class="fiche-carte">
     <button class="fiche-x" onclick="fermerFichePoke()" aria-label="Fermer">✕</button>
@@ -1088,7 +1130,7 @@ function rendreFichePoke(){
   const niv = pk.niveau!=null ? pk.niveau : (pk.niv!=null ? pk.niv : '');
   const pvMax = pk.pv_max!=null ? pk.pv_max : (pk.pvMax!=null ? pk.pvMax : null);
   const pv = pk.pv!=null ? pk.pv : pvMax;
-  const srcSprite = pk.sprite || (id ? spriteParNumero(id) : '');
+  const srcSprite = pk.sprite || (id ? (estChromaMC(pk.nom) ? spriteShinyMC(id) : spriteParNumero(id)) : '');
   let h = '<div class="fiche-head">' + (srcSprite ? '<img class="fiche-sprite" src="' + echapper(srcSprite) + '" alt="" onerror="this.remove()">' : '')
     + '<div><div style="font-size:1.25rem;font-weight:900">' + echapper(nomAffiche) + '</div>'
     + '<div style="color:#888;font-weight:700">' + echapper(especeNom || '???') + (niv !== '' ? ' · ' + (en ? 'Lv. ' : 'niv. ') + echapper(niv) : '') + '</div>';
@@ -1239,7 +1281,7 @@ function rendreEquipe(joueurs){
         barre = '<div class="pv-barre"><div class="pv-remplissage'+cls+'" style="width:'+pct+'%"></div></div>';
         txt = '<div class="pv-txt">'+pv+' / '+pvMax+'</div>';
       }
-      const srcSprite = pk.sprite || spriteGen1(nom);
+      const srcSprite = pk.sprite || spriteFaceMC(nom, false);
       const icone = srcSprite ? '<div class="poke-icone"><img src="'+echapper(srcSprite)+'" alt="" onerror="this.remove()"></div>' : '<div class="poke-icone"></div>';
       const koCase = (pvMax && pv != null && pv <= 0) ? ' ko' : '';
       return '<div class="poke-case'+koCase+'" style="cursor:pointer" onclick="ouvrirFichePoke('+ipk+')">'+icone+'<div class="poke-infos"><div class="poke-nom">'+echapper(nom)
@@ -1252,7 +1294,7 @@ function rendreEquipe(joueurs){
         equipeAffichee.push(pk);
         const nom = pk.nom || pk.name || '?';
         const niv = pk.niveau!=null ? pk.niveau : (pk.niv!=null ? pk.niv : (pk.level!=null ? pk.level : ''));
-        const srcSprite = pk.sprite || spriteGen1(nom);
+        const srcSprite = pk.sprite || spriteFaceMC(nom, false);
         const icone = srcSprite ? '<div class="poke-icone"><img src="'+echapper(srcSprite)+'" alt="" onerror="this.remove()"></div>' : '<div class="poke-icone"></div>';
         return '<div class="poke-case" style="cursor:pointer" onclick="ouvrirFichePoke('+ipk+')">'+icone+'<div class="poke-infos"><div class="poke-nom">'+echapper(nom)+'</div><div class="poke-niv">'+(niv!=='' ? 'N. '+echapper(niv) : '')+'</div>'+pastilleStatut(pk)+'</div></div>';
       }).join('') + '</div>';
@@ -1528,6 +1570,7 @@ function rendreCarte(resolutions){
     svg += '<g class="pin' + (estVisite || estActuel ? '' : ' gris') + (estSel ? ' sel' : '') + '" onclick="lieuClique(\'' + l.cle + '\')">'
       + (estActuel ? '<circle class="pin-halo" cx="' + l.x + '" cy="' + l.y + '" r="3.2"/>' : '')
       + '<circle class="pin-point" cx="' + l.x + '" cy="' + l.y + '" r="2.1" fill="' + coul + '"/>'
+      + (enquetesPourMC(l).length ? '<circle cx="' + (l.x + 2.7) + '" cy="' + (l.y - 2.7) + '" r="1.35" fill="#7a5af8" stroke="#fff" stroke-width="0.4"/>' : '')
       + '<text x="' + l.x + '" y="' + (l.y - 3.1) + '" text-anchor="middle">' + echapper(en ? l.en : l.fr) + '</text></g>';
   });
   svg += '</svg>';
@@ -1536,6 +1579,12 @@ function rendreCarte(resolutions){
   if(sel){
     const statut = (sel.cle === actuel) ? '📍 ' + t('carte_ici') : (visites.has(sel.cle) ? '✔ ' + t('carte_visite') : '🔒 ' + t('carte_a_decouvrir'));
     info += '<b>' + echapper(en ? sel.en : sel.fr) + '</b> — ' + echapper(en ? sel.info_en : sel.info_fr) + '<br><span class="note">' + statut + '</span>';
+    const enqs = enquetesPourMC(sel);
+    if(enqs.length){
+      info += '<div class="enq-bloc"><div class="enq-titre">🟣 ' + (en ? 'Ongoing investigations' : 'Enquêtes en cours') + '</div>' + enqs.map(function(e){
+        return '<div class="enq-item"><b>' + echapper(e.titre || '') + '</b>' + (e.detail ? '<span class="note">' + echapper(e.detail) + '</span>' : '') + '</div>';
+      }).join('') + '</div>';
+    }
   } else info += '<span class="note">' + t('carte_touche') + '</span>';
   info += '</div>';
   zone.innerHTML = svg + info + '<ul class="carte-itineraire">' + ITINERAIRE_KANTO.map(function(e, i){
@@ -1585,6 +1634,15 @@ function sacDe(joueur){
 }
 const SPRITES_OBJETS = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/';
 const REGLES_OBJETS = [
+  ['baie oran', 'oran-berry'], ['baie ceriz', 'cheri-berry'], ['baie maron', 'chesto-berry'],
+  ['baie pecha', 'pecha-berry'], ['baie fraive', 'rawst-berry'], ['baie prine', 'leppa-berry'], ['baie sitrus', 'sitrus-berry'],
+  ['pierre lune', 'moon-stone'], ['pierre feu', 'fire-stone'], ['pierre eau', 'water-stone'],
+  ['pierre foudre', 'thunder-stone'], ['pierre plante', 'leaf-stone'], ['pierre soleil', 'sun-stone'],
+  ['fossile dome', 'dome-fossil'], ['fossile', 'helix-fossil'],
+  ['vieille canne', 'old-rod'], ['super canne', 'super-rod'], ['mega canne', 'good-rod'],
+  ['multi exp', 'exp-share'], ['œuf chance', 'lucky-egg'], ['oeuf chance', 'lucky-egg'],
+  ['miel', 'honey'], ['elixir', 'elixir'], ['huile', 'ether'],
+  ['tomberoche', 'tm-rock'], ['vibraqua', 'tm-water'], ['onde de choc', 'tm-electric'],
   ['master ball', 'master-ball'], ['hyper ball', 'ultra-ball'], ['super ball', 'great-ball'],
   ['honor ball', 'premier-ball'], ['premier ball', 'premier-ball'], ['luxe', 'luxury-ball'],
   ['poke ball', 'poke-ball'], ['pokeball', 'poke-ball'],
@@ -1612,10 +1670,26 @@ function spriteObjet(nom){
   for(const [motif, slug] of REGLES_OBJETS){ if(n.includes(motif)) return SPRITES_OBJETS + slug + '.png'; }
   return null;
 }
+function slugObjetMC(nom){
+  const n = ' ' + String(nom || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') + ' ';
+  for(const [motif, slug] of REGLES_OBJETS){ if(n.includes(motif)) return slug; }
+  return null;
+}
+function spriteObjet5e(nom){
+  const s = slugObjetMC(nom);
+  return s ? 'https://poke5e.app/assets/items/' + s + '/sprite.png' : null;
+}
 function iconeObjetHtml(nom){
-  const url = spriteObjet(nom);
-  if(!url) return '<span class="sac-icone">' + iconeObjet(nom) + '</span>';
-  return '<span class="sac-icone sac-icone-img"><span class="sac-fond">' + iconeObjet(nom) + '</span><img class="sac-img" src="' + url + '" alt="" onload="this.previousElementSibling.style.visibility=\'hidden\'" onerror="this.remove()"></span>';
+  const uA = spriteObjet(nom);
+  const coquille = function(srcImg, err){
+    return '<span class="sac-icone sac-icone-img"><span class="sac-fond">' + iconeObjet(nom) + '</span><img class="sac-img" src="' + srcImg + '" alt="" onload="this.previousElementSibling.style.visibility=\'hidden\'" ' + err + '></span>';
+  };
+  if(uA && uA.indexOf('http') !== 0) return coquille(uA, 'onerror="this.remove()"');
+  const u5 = spriteObjet5e(nom);
+  const premier = u5 || uA;
+  if(!premier) return '<span class="sac-icone">' + iconeObjet(nom) + '</span>';
+  const err = (u5 && uA) ? 'onerror="this.onerror=null;this.src=\'' + uA + '\'"' : 'onerror="this.remove()"';
+  return coquille(premier, err);
 }
 function iconeObjet(nom){
   const n = nomNormalise(nom);
@@ -1715,6 +1789,7 @@ function revelerDe(tour, idx){
   const arr = desReveles(tour);
   if(arr.indexOf(idx) < 0) arr.push(idx);
   try{ localStorage.setItem(cle, JSON.stringify(arr)); }catch(e){}
+  sonner('de');
   rafraichirMonde(true);
 }
 document.addEventListener('click', function(ev){
@@ -1856,8 +1931,34 @@ function basculerSon(){
   if(sonActif) demarrerMusique();
   else if(MUS.ctx) MUS.ctx.suspend();
 }
-document.addEventListener('pointerdown', function(){ if(sonActif && mondeCourant) demarrerMusique(); });
+document.addEventListener('pointerdown', function(){ if(sonActif){ acSfx(); if(mondeCourant) demarrerMusique(); } });
 
+const PLATEAUX_ARENE_MC = [
+  ['argenta', 'arene-argenta.jpg'], ['azuria', 'arene-azuria.jpg'], ['carmin', 'arene-carmin.jpg'],
+  ['safrania', 'arene-safrania.webp'], ['celadopole', 'arene-celadopole.jpg'], ['parmanie', 'arene-parmanie.jpg'],
+  ['cramois', 'arene-cramoisile.jpg'], ['jadielle', 'arene-jadielle.jpg']
+];
+function plateauDepuisLieuMC(lieu){
+  const s = nomNormalise(lieu || '');
+  for(const pa of PLATEAUX_ARENE_MC){ if(s.includes(pa[0])) return pa[1]; }
+  return null;
+}
+let sceneSigMC = '', sceneAdvSigMC = '';
+function coinBallsMC(groupe, classe){
+  if(!groupe || !groupe.pokes.length) return '';
+  const balls = groupe.pokes.map(function(pk){
+    const p = pvDeScene(pk);
+    const ko = p.pvMax && p.pv != null && p.pv <= 0;
+    if(ko){
+      equipeAffichee.push(pk);
+      const idx = equipeAffichee.length - 1;
+      return '<img class="cball ko" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="" title="' + echapper(pk.nom || '') + ' — K.O. (toucher pour voir)" onclick="ouvrirFichePoke(' + idx + ')">';
+    }
+    return '<img class="cball" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" alt="">';
+  }).join('');
+  return '<div class="coin ' + classe + '"><span class="cname">' + echapper(groupe.nom || '') + '</span><span class="cballs">' + balls + '</span></div>';
+}
+function pvDeScene(pk){ const pvMax = pk.pv_max!=null ? pk.pv_max : pk.pvMax; const pv = pk.pv!=null ? pk.pv : pvMax; return { pv: pv, pvMax: pvMax }; }
 function rendreScene(joueurs, resolutions){
   const zone = document.getElementById('m-scene'); if(!zone) return;
   const titre = document.getElementById('m-scene-titre');
@@ -1884,11 +1985,34 @@ function rendreScene(joueurs, resolutions){
   }
   const combat = adversaires.length > 0;
   if(titre) titre.innerHTML = combat ? '⚔️ ' + t('scene_combat') : '📍 ' + t('scene_titre');
-  function pvDe(pk){ const pvMax = pk.pv_max!=null ? pk.pv_max : pk.pvMax; const pv = pk.pv!=null ? pk.pv : pvMax; return { pv: pv, pvMax: pvMax }; }
+  /* --- game feel : signature de scène, PV précédents, sons --- */
+  const sigScene = adversaires.join('|') + '#' + equipe.map(function(pk){ const p = pvDeScene(pk); return (pk.nom || '') + ':' + p.pv; }).join('|');
+  const change = sigScene !== sceneSigMC;
+  const advSig = adversaires.join('|');
+  if(combat && advSig && advSig !== sceneAdvSigMC) sonner('envoi');
+  sceneAdvSigMC = advSig;
+  const flashNoms = new Set();
+  if(mondeCourant){
+    const clePv = 'mc_pv_' + mondeCourant.code;
+    let prev = {};
+    try{ prev = JSON.parse(localStorage.getItem(clePv) || '{}'); }catch(e){}
+    let aEuKo = false, aEuTouche = false;
+    const nouv = {};
+    equipeDe(moi).forEach(function(pk){
+      const p = pvDeScene(pk); if(!p.pvMax) return;
+      const nn = nomNormalise(pk.nom || '');
+      nouv[nn] = p.pv;
+      if(change && prev[nn] != null && p.pv < prev[nn]){ flashNoms.add(nn); if(p.pv <= 0) aEuKo = true; else aEuTouche = true; }
+    });
+    if(aEuKo) sonner('ko'); else if(aEuTouche) sonner('touche');
+    try{ localStorage.setItem(clePv, JSON.stringify(nouv)); }catch(e){}
+  }
+  const pop = change;
+  sceneSigMC = sigScene;
   function cartePoke(pk, dos){
     const nom = pk.nom || '?';
-    const src = dos ? (spriteDos(nom) || spriteGen1(nom)) : spriteGen1(nom);
-    const p = pvDe(pk);
+    const src = spriteFaceMC(nom, dos);
+    const p = pvDeScene(pk);
     let barre = '';
     if(p.pvMax){
       const pct = Math.max(0, Math.min(100, Math.round(100 * p.pv / p.pvMax)));
@@ -1896,22 +2020,29 @@ function rendreScene(joueurs, resolutions){
       barre = '<div class="pv-barre"><div class="pv-remplissage' + cls + '" style="width:' + pct + '%"></div></div><div class="pv-txt">' + p.pv + ' / ' + p.pvMax + ' PV</div>';
     }
     const ko = p.pvMax && p.pv != null && p.pv <= 0;
-    return '<div class="scene-poke' + (ko ? ' ko' : '') + '">' + (src ? '<img src="' + echapper(src) + '" alt="" onerror="this.remove()">' : '') + '<div class="scene-nom">' + echapper(nom) + '</div>' + barre + pastilleStatut(pk) + '</div>';
+    const classes = 'scene-poke' + (ko ? ' ko' : '') + (pop ? ' pop' : '') + (flashNoms.has(nomNormalise(nom)) ? ' hit' : '');
+    return '<div class="' + classes + '">' + (src ? '<img src="' + echapper(src) + '" alt="" onerror="this.onerror=null;this.src=\'missingno.png\'">' : '') + '<div class="scene-nom">' + echapper(nom) + '</div>' + barre + pastilleStatut(pk) + '</div>';
   }
-  let html = '';
+  const lieu = (mondeCourant && mondeCourant.etat && mondeCourant.etat.lieu) || '';
+  const plateau = combat ? plateauDepuisLieuMC(lieu) : null;
+  let html = '<div class="scene-terrain"' + (plateau ? ' style="background-image:linear-gradient(rgba(14,10,38,.22),rgba(14,10,38,.36)),url(\'' + plateau + '\')"' : '') + '>';
   if(combat){
+    const autres = (joueurs || []).filter(function(j){ return j.id !== moi.id; });
+    html += coinBallsMC({ nom: moi.nom, pokes: equipe }, 'coin-bl');
+    if(autres[0]) html += coinBallsMC({ nom: autres[0].nom, pokes: equipeDe(autres[0]).slice(0, 6) }, 'coin-br');
+    if(autres[1]) html += coinBallsMC({ nom: autres[1].nom, pokes: equipeDe(autres[1]).slice(0, 6) }, 'coin-tr');
     html += '<div class="scene-rangee">' + adversaires.map(function(nom){
       const src = spriteGen1(nom);
-      return '<div class="scene-poke">' + (src ? '<img src="' + echapper(src) + '" alt="">' : '') + '<div class="scene-nom">' + echapper(nom) + '</div></div>';
+      return '<div class="scene-poke' + (pop ? ' pop' : '') + '">' + (src ? '<img src="' + echapper(src) + '" alt="" onerror="this.onerror=null;this.src=\'missingno.png\'">' : '') + '<div class="scene-nom">' + echapper(nom) + (estChromaMC(nom) ? ' ✨' : '') + '</div></div>';
     }).join('') + '</div><div class="scene-vs">⚔️</div>';
-    const actif = equipe.find(function(pk){ const p = pvDe(pk); return !p.pvMax || p.pv > 0; });
-    const autres = equipe.filter(function(pk){ return pk !== actif; });
-    html += '<div class="scene-rangee">' + (actif ? cartePoke(actif, true) : '') + autres.map(function(pk){ return cartePoke(pk, false); }).join('') + '</div>';
+    const actif = equipe.find(function(pk){ const p = pvDeScene(pk); return !p.pvMax || p.pv > 0; });
+    const autresPk = equipe.filter(function(pk){ return pk !== actif; });
+    html += '<div class="scene-rangee">' + (actif ? cartePoke(actif, true) : '') + autresPk.map(function(pk){ return cartePoke(pk, false); }).join('') + '</div>';
   } else {
     html += '<div class="scene-rangee">' + equipe.map(function(pk){ return cartePoke(pk, false); }).join('') + '</div>';
-    const lieu = (mondeCourant && mondeCourant.etat && mondeCourant.etat.lieu) || '';
     if(lieu) html += '<p class="note">📍 ' + echapper(lieu) + '</p>';
   }
+  html += '</div>';
   zone.innerHTML = html || '<p class="note">' + t('equipe_vide') + '</p>';
   majMusique(combat);
 }
@@ -1982,7 +2113,7 @@ function afficherPnj(filtre){
   liste.forEach(function(x){ const c = x.camp || 'Autres'; (camps[c] = camps[c] || []).push(x); });
   zone.innerHTML = Object.keys(camps).map(function(c){
     return '<h4 class="pnj-camp">' + echapper(c) + '</h4>' + camps[c].map(function(x){
-      return '<div class="pnj-ligne"><b>' + echapper(x.nom) + '</b>' + (x.description ? '<div class="note">' + echapper(x.description) + '</div>' : '') + '</div>';
+      return '<div class="pnj-ligne"><b>' + echapper(x.nom) + '</b>' + (x.description ? '<div class="note">' + echapper(x.description) + '</div>' : '') + relJaugeMC(x.nom) + '</div>';
     }).join('');
   }).join('');
 }
@@ -2018,6 +2149,127 @@ function rendreQuetes(resolutions, objectifs){
   q.innerHTML = html;
 }
 
+/* ===== Données MJ étendues : enquêtes, relations PNJ, chromatiques (affichages portés de CF v107/v108 ; écrites par la fonction MJ v5) ===== */
+let enquetesMC = [], relationsMC = {}, chromatiquesMC = new Set();
+function chargerDonneesMJ(objectifs){
+  enquetesMC = []; relationsMC = {}; chromatiquesMC = new Set();
+  (objectifs || []).forEach(function(o){
+    if(!o || !o.texte) return;
+    try{
+      if(o.type === 'enquetes'){ const d = JSON.parse(o.texte); if(Array.isArray(d)) enquetesMC = d; }
+      else if(o.type === 'relations'){ const d = JSON.parse(o.texte); if(d && typeof d === 'object') relationsMC = d; }
+      else if(o.type === 'chromatiques'){ const d = JSON.parse(o.texte); if(Array.isArray(d)) d.forEach(function(n){ chromatiquesMC.add(nomNormalise(n)); }); }
+    }catch(e){}
+  });
+}
+function enquetesPourMC(l){
+  const cle = nomNormalise(l.cle || ''), nom = nomNormalise(l.fr || '');
+  return enquetesMC.filter(function(e){
+    const el = nomNormalise(e.lieu || '');
+    return el && (el === cle || el === nom || el.includes(cle) || cle.includes(el) || el.includes(nom) || nom.includes(el));
+  });
+}
+const REL_LABELS_MC = { '-2': 'Hostile', '-1': 'Méfiance', '0': 'Neutre', '1': 'Amical', '2': 'Allié proche' };
+function relJaugeMC(nom){
+  let trouve = null;
+  Object.keys(relationsMC).forEach(function(k){ if(nomNormalise(k) === nomNormalise(nom)) trouve = relationsMC[k]; });
+  if(trouve === null) return '';
+  let v = parseInt(trouve, 10); if(isNaN(v)) v = 0;
+  v = Math.max(-2, Math.min(2, v));
+  let pips = '';
+  [-2, -1, 0, 1, 2].forEach(function(n){
+    const on = (v === 0 && n === 0) || (v > 0 && n >= 0 && n <= v) || (v < 0 && n <= 0 && n >= v);
+    pips += '<span class="relpip' + (on ? (n < 0 ? ' neg' : (n > 0 ? ' pos' : ' mid')) : '') + '"></span>';
+  });
+  return '<div class="relrow"><span>Relation</span><span class="relgauge">' + pips + '</span><span>' + (v > 0 ? '+' : '') + v + ' · ' + REL_LABELS_MC[String(v)] + '</span></div>';
+}
+function estChromaMC(nom){ return chromatiquesMC.has(nomNormalise(nom || '')); }
+function spriteShinyMC(id){ return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/' + id + '.png'; }
+function spriteFaceMC(nom, dos){
+  const id = numeroDex(nom);
+  if(estChromaMC(nom) && id) return dos ? 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/shiny/' + id + '.png' : spriteShinyMC(id);
+  return dos ? (spriteDos(nom) || spriteGen1(nom)) : spriteGen1(nom);
+}
+
+/* ===== Game feel : sons synthétisés, écran de badge, export (porté de Chant & Festin v114/v115, adapté) ===== */
+let ACSfx = null, dernierSonSfx = {};
+function acSfx(){
+  if(!ACSfx){ try{ ACSfx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){} }
+  if(ACSfx && ACSfx.state === 'suspended') ACSfx.resume();
+  return ACSfx;
+}
+function bipSfx(f, t0, d, type, vol, glisse){
+  const c = acSfx(); if(!c) return;
+  const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + t0;
+  o.type = type; o.frequency.setValueAtTime(f, t);
+  if(glisse) o.frequency.exponentialRampToValueAtTime(glisse, t + d);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+  o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + d + .05);
+}
+function sonner(type){
+  if(!sonActif) return;
+  const c = acSfx(); if(!c || c.state !== 'running') return;
+  const now = performance.now();
+  if(dernierSonSfx[type] && now - dernierSonSfx[type] < 160) return;
+  dernierSonSfx[type] = now;
+  if(type === 'de'){ bipSfx(620, 0, .06, 'square', .035); bipSfx(840, .05, .06, 'square', .035); bipSfx(1050, .1, .09, 'square', .035); }
+  else if(type === 'touche'){ bipSfx(170, 0, .12, 'sawtooth', .055, 60); }
+  else if(type === 'ko'){ bipSfx(520, 0, .42, 'triangle', .06, 65); }
+  else if(type === 'envoi'){ bipSfx(280, 0, .15, 'sine', .05, 880); bipSfx(1180, .14, .07, 'square', .028); }
+  else if(type === 'badge'){ [523, 659, 784, 1046].forEach(function(f, i){ bipSfx(f, i * .11, .15, 'triangle', .05); }); bipSfx(1318, .45, .32, 'triangle', .05); }
+  else if(type === 'clic'){ bipSfx(700, 0, .05, 'square', .025); }
+}
+function montrerBadgeMC(nomBadge, total, celebre){
+  const ov = document.getElementById('badge-overlay'); if(!ov) return;
+  let slot = null, idx = -1;
+  const bb = String(nomBadge || '').toLowerCase();
+  BADGE_SLOTS.forEach(function(bs, k){ if(!slot && bs.noms.some(function(n){ return bb.includes(n); })){ slot = bs; idx = k; } });
+  if(!slot){ idx = Math.min(Math.max(total - 1, 0), 7); slot = BADGE_SLOTS[idx]; }
+  const md = document.getElementById('bo-media');
+  md.innerHTML = '<img src="' + slot.f + '" alt="" onerror="this.remove()">';
+  document.getElementById('bo-titre').textContent = '🏅 Badge ' + (nomBadge || slot.noms[0]) + ' obtenu !';
+  document.getElementById('bo-sous').textContent = 'Badge n°' + total + ' sur 8';
+  const cf = document.getElementById('bo-confettis'); cf.innerHTML = '';
+  if(celebre){
+    const cols = ['#e3352c', '#ffd23e', '#35a3e8', '#57b368', '#f472b6', '#f6b73c'];
+    let pieces = '';
+    for(let k = 0; k < 28; k++) pieces += '<i style="left:' + (Math.random() * 100) + '%;background:' + cols[k % cols.length] + ';animation-duration:' + (1.6 + Math.random() * 1.4) + 's;animation-delay:' + (Math.random() * .5) + 's"></i>';
+    cf.innerHTML = pieces;
+  }
+  ov.hidden = false;
+  ov.onclick = function(){ ov.hidden = true; };
+  if(celebre) sonner('badge');
+}
+function verifierBadgesMC(joueurs){
+  if(!mondeCourant || !identiteCourante) return;
+  const moi = (joueurs || []).find(function(j){ return j.id === identiteCourante.joueur_id; });
+  if(!moi) return;
+  const pp = moi.passeport || {};
+  const badges = Array.isArray(pp.badges) ? pp.badges : [];
+  const cle = 'mc_badges_' + mondeCourant.code + '_' + moi.id;
+  let vu = null;
+  try{ vu = localStorage.getItem(cle); }catch(e){}
+  if(vu === null){ try{ localStorage.setItem(cle, String(badges.length)); }catch(e){} return; }
+  if(badges.length > +vu){
+    try{ localStorage.setItem(cle, String(badges.length)); }catch(e){}
+    montrerBadgeMC(badges[badges.length - 1], badges.length, true);
+  }
+}
+let exportSnapshot = null;
+function exporterMonde(){
+  if(!exportSnapshot || !mondeCourant) return;
+  const blob = new Blob([JSON.stringify(exportSnapshot, null, 1)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'mondes-codes-' + mondeCourant.code + '-export.json';
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+}
+(function(){
+  const b = document.getElementById('btn-export');
+  if(b) b.addEventListener('click', exporterMonde);
+})();
+
 /* ===== Navigation par pages (comme Chant & Festin) ===== */
 function ouvrirPageMonde(id){ montrer(id); window.scrollTo(0, 0); }
 document.querySelectorAll('[data-page]').forEach(function(b){
@@ -2026,6 +2278,8 @@ document.querySelectorAll('[data-page]').forEach(function(b){
 
 function rendreMonde(joueurs, annonces, resolutions, objectifs, pnj){
   objectifs = objectifs || []; pnj = pnj || []; objectifsCourants = objectifs;
+  exportSnapshot = { appli: 'Mondes & Codes', exporte_le: new Date().toISOString(), monde: m, joueurs: joueurs, annonces: annonces, resolutions: resolutions, objectifs: objectifs, pnj: pnj };
+  chargerDonneesMJ(objectifs);
   const m = mondeCourant, idt = identiteCourante;
   document.getElementById('m-nom').textContent = m.nom;
   document.getElementById('m-code').textContent = m.code;
@@ -2053,7 +2307,7 @@ function rendreMonde(joueurs, annonces, resolutions, objectifs, pnj){
   rendreEquipe(joueurs);
   rendrePersonnages(joueurs);
   rendreCarte(resolutions);
-  rendreDex(joueurs, resolutions); majBoutonNotif(); rendreSac(joueurs); rendreQuetes(resolutions, objectifs); rendrePropositions(objectifs); rendrePnj(pnj); rendrePasseports(joueurs, resolutions); rendreScene(joueurs, resolutions); rendreLasRes(resolutions);
+  rendreDex(joueurs, resolutions); majBoutonNotif(); rendreSac(joueurs); rendreQuetes(resolutions, objectifs); rendrePropositions(objectifs); rendrePnj(pnj); rendrePasseports(joueurs, resolutions); rendreScene(joueurs, resolutions); rendreLasRes(resolutions); verifierBadgesMC(joueurs);
   const mienne = annonces.find(a=>idt && a.joueur_id===idt.joueur_id && a.statut==='envoyee');
   const zone = document.getElementById('a-texte');
   if(document.activeElement !== zone) zone.value = mienne ? mienne.texte : '';

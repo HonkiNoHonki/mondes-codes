@@ -1,7 +1,7 @@
 // Mondes & Codes — service worker
 // Rôles : installation PWA (icône écran d'accueil), cache léger de l'enveloppe,
 // et réception des notifications push du jeu (résolutions de tours).
-const CACHE = 'mc-v2';
+const CACHE = 'mc-v3';
 const ENVELOPPE = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './hero-accueil.jpg'];
 
 self.addEventListener('install', (e) => {
