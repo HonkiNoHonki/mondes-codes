@@ -2447,12 +2447,37 @@ function b64uToBytes(txt){ txt = txt.replace(/-/g,'+').replace(/_/g,'/'); while(
 function notifMsg(txt){ const el = document.getElementById('m-notif-msg'); if(el) el.textContent = txt || ''; }
 function estInstallee(){ return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true; }
 function estIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent); }
+let notifSyncEnCours = false, notifDernierEndpoint = null;
 async function majBoutonNotif(){
   const b = document.getElementById('btn-notif'); if(!b) return;
   if(!('Notification' in window)) return;
   if(Notification.permission === 'granted'){
-    try{ const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription();
-      if(sub){ const lbl = b.querySelector('[data-i18n="nav_notif"]'); if(lbl) lbl.textContent = t('notif_activees'); } }catch(e){}
+    try{ const reg = await navigator.serviceWorker.ready; let sub = await reg.pushManager.getSubscription();
+      if(sub){ const lbl = b.querySelector('[data-i18n="nav_notif"]'); if(lbl) lbl.textContent = t('notif_activees'); }
+      // Réparation silencieuse (v21) : après une mise à jour de l'appli, iOS peut
+      // supprimer ou renouveler l'abonnement push. On le recrée si besoin (avec le
+      // contrôle de clé VAPID) et on ré-enregistre l'adresse actuelle côté serveur,
+      // sans attendre un clic sur le bouton. Mémo par adresse : pas de ré-écriture
+      // à chaque rafraîchissement, seulement quand l'adresse change.
+      if(!notifSyncEnCours){
+        if(sub){
+          const cleAttendue = b64uToBytes(VAPID_PUBLIC);
+          const cleSub = sub.options && sub.options.applicationServerKey ? new Uint8Array(sub.options.applicationServerKey) : null;
+          const memeCle = !!(cleSub && cleSub.length === cleAttendue.length && cleSub.every(function(v, i){ return v === cleAttendue[i]; }));
+          if(!memeCle){ try{ await sub.unsubscribe(); }catch(e){} sub = null; }
+        }
+        if(!sub){ try{ sub = await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey: b64uToBytes(VAPID_PUBLIC) }); }catch(e){ sub = null; } }
+        if(sub && MODE_SUPABASE && mondeCourant && identiteCourante && sub.endpoint !== notifDernierEndpoint){
+          notifSyncEnCours = true;
+          try{
+            await sb('push_abos?on_conflict=monde_code,joueur_id', { method:'POST', headers:{'apikey':CONFIG.SUPABASE_KEY,'Authorization':'Bearer '+CONFIG.SUPABASE_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'}, body: JSON.stringify({ monde_code: mondeCourant.code, joueur_id: identiteCourante.joueur_id, subscription: sub.toJSON() }) });
+            notifDernierEndpoint = sub.endpoint;
+            const lbl2 = b.querySelector('[data-i18n="nav_notif"]'); if(lbl2) lbl2.textContent = t('notif_activees');
+          }catch(e){}
+          notifSyncEnCours = false;
+        }
+      }
+    }catch(e){}
   }
 }
 async function activerNotifications(){
