@@ -2278,7 +2278,7 @@ document.querySelectorAll('[data-page]').forEach(function(b){
 
 function rendreMonde(joueurs, annonces, resolutions, objectifs, pnj){
   objectifs = objectifs || []; pnj = pnj || []; objectifsCourants = objectifs;
-  exportSnapshot = { appli: 'Mondes & Codes', exporte_le: new Date().toISOString(), monde: m, joueurs: joueurs, annonces: annonces, resolutions: resolutions, objectifs: objectifs, pnj: pnj };
+  exportSnapshot = { appli: 'Mondes & Codes', exporte_le: new Date().toISOString(), monde: mondeCourant, joueurs: joueurs, annonces: annonces, resolutions: resolutions, objectifs: objectifs, pnj: pnj };
   chargerDonneesMJ(objectifs);
   const m = mondeCourant, idt = identiteCourante;
   document.getElementById('m-nom').textContent = m.nom;
