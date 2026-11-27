@@ -258,6 +258,16 @@
 .scene-terrain .teinte.nuit{background:linear-gradient(180deg,rgba(7,9,40,.46),rgba(3,5,26,.42))}
 .scene-terrain .teinte.pluie::after{content:'';position:absolute;inset:-40px;background:repeating-linear-gradient(105deg,transparent 0 9px,rgba(190,210,255,.20) 9px 10px,transparent 10px 19px);animation:teintePluie .55s linear infinite}
 @keyframes teintePluie{from{transform:translateY(-28px)}to{transform:translateY(28px)}}
+.scene-terrain .ambiance{position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden;border-radius:14px}
+.scene-terrain .ambiance.eau::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.16) 48%,transparent 62%);background-size:250% 100%;animation:ambEau 5.5s ease-in-out infinite}
+@keyframes ambEau{0%{background-position:120% 0}100%{background-position:-120% 0}}
+.scene-terrain .ambiance.feuilles i{position:absolute;top:-24px;font-style:normal;font-size:15px;opacity:0;animation:ambFeuille 7s linear infinite}
+.scene-terrain .ambiance.feuilles i:nth-child(1){left:12%}
+.scene-terrain .ambiance.feuilles i:nth-child(2){left:34%;animation-delay:2.6s;font-size:12px}
+.scene-terrain .ambiance.feuilles i:nth-child(3){left:55%;animation-delay:4.4s}
+.scene-terrain .ambiance.feuilles i:nth-child(4){left:74%;animation-delay:1.5s;font-size:13px}
+.scene-terrain .ambiance.feuilles i:nth-child(5){left:90%;animation-delay:5.8s}
+@keyframes ambFeuille{0%{transform:translate(0,-10px) rotate(0deg);opacity:0}12%{opacity:.85}50%{transform:translate(14px,120px) rotate(160deg)}100%{transform:translate(-8px,280px) rotate(320deg);opacity:0}}
   .coin{position:absolute;display:flex;flex-direction:column;gap:2px;z-index:3}
   .coin .cname{font-size:10px;color:#fff;text-shadow:0 1px 3px #000,0 0 6px rgba(0,0,0,.6);font-weight:700}
   .coin-bl{left:8px;bottom:8px}
@@ -2081,6 +2091,21 @@ function coinBallsMC(groupe, classe){
   return '<div class="coin ' + classe + '"><span class="cname">' + echapper(groupe.nom || '') + '</span><span class="cballs">' + balls + '</span></div>';
 }
 function pvDeScene(pk){ const pvMax = pk.pv_max!=null ? pk.pv_max : pk.pvMax; const pv = pk.pv!=null ? pk.pv : pvMax; return { pv: pv, pvMax: pvMax }; }
+let dejaInteragiMC=false;
+document.addEventListener('pointerdown',()=>{dejaInteragiMC=true});
+function criPokeMC(id,force){
+  if(!id||!sonActif)return;
+  if(!force&&!dejaInteragiMC)return;
+  try{
+    const a=new Audio('https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/legacy/'+id+'.ogg');
+    a.volume=.45;
+    a.onerror=()=>{try{const b=new Audio('https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/'+id+'.ogg');b.volume=.45;b.play().catch(()=>{})}catch(e){}};
+    a.play().catch(()=>{});
+  }catch(e){}
+}
+const AMB_EAU_MC=['océane','oceane','ss anne','paquebot','mer','plage','port','phare','île','ile','bateau','quai'];
+const AMB_FEUILLES_MC=['forêt','foret','bois','jardin','parc','plaine','prairie','clairière','clairiere'];
+function ambianceLieuMC(lieu){const s=String(lieu||'').toLowerCase();if(AMB_EAU_MC.some(m=>s.includes(m)))return 'eau';if(AMB_FEUILLES_MC.some(m=>s.includes(m)))return 'feuilles';return ''}
 function phaseJourMC(h){
   const m=String(h||'').match(/(\d{1,2})[:h](\d{2})?/);
   if(!m)return '';
@@ -2121,7 +2146,7 @@ function rendreScene(joueurs, resolutions){
   const sigScene = adversaires.join('|') + '#' + equipe.map(function(pk){ const p = pvDeScene(pk); return (pk.nom || '') + ':' + p.pv; }).join('|');
   const change = sigScene !== sceneSigMC;
   const advSig = adversaires.join('|');
-  if(combat && advSig && advSig !== sceneAdvSigMC) sonner('envoi');
+  if(combat && advSig && advSig !== sceneAdvSigMC){ sonner('envoi'); const idAdv = adversaires.length ? numeroDex(adversaires[0]) : null; if(idAdv) criPokeMC(idAdv); }
   sceneAdvSigMC = advSig;
   const flashNoms = new Set();
   if(mondeCourant){
@@ -2154,7 +2179,8 @@ function rendreScene(joueurs, resolutions){
     const ko = p.pvMax && p.pv != null && p.pv <= 0;
     const classes = 'scene-poke' + (ko ? ' ko' : '') + (pop ? ' pop' : '') + (flashNoms.has(nomNormalise(nom)) ? ' hit' : '');
     const fx = fxStatutMC(pk);
-    const imgHtml = src ? '<img' + (fx && fx.img ? ' class="' + fx.img + '"' : '') + ' src="' + echapper(src) + '" alt="" onerror="this.onerror=null;this.src=\'missingno.png\'">' : '';
+    const idPk = idDexPoke(pk);
+    const imgHtml = src ? '<img' + (fx && fx.img ? ' class="' + fx.img + '"' : '') + (idPk ? ' style="cursor:pointer" onclick="criPokeMC(' + idPk + ',true)"' : '') + ' src="' + echapper(src) + '" alt="" onerror="this.onerror=null;this.src=\'missingno.png\'">' : '';
     const tete = src ? '<span class="mc-spwrap">' + imgHtml + (fx ? '<span class="fxstat fx-' + fx.kind + '">' + fx.inner + '</span>' : '') + '</span>' : '';
     return '<div class="' + classes + '">' + tete + '<div class="scene-nom">' + echapper(nom) + '</div>' + barre + pastilleStatut(pk) + '</div>';
   }
@@ -2164,6 +2190,8 @@ function rendreScene(joueurs, resolutions){
   const phMC = phaseJourMC(mondeCourant && mondeCourant.etat ? mondeCourant.etat.heure : '');
   const pluieMC = !!(mondeCourant && mondeCourant.etat && /pluie|orage|averse/i.test(mondeCourant.etat.meteo || ''));
   if(phMC || pluieMC) html += '<div class="teinte ' + phMC + (pluieMC ? ' pluie' : '') + '"></div>';
+  const ambMC = ambianceLieuMC(lieu);
+  if(ambMC) html += '<div class="ambiance ' + ambMC + '">' + (ambMC === 'feuilles' ? '<i>🍃</i><i>🍃</i><i>🍃</i><i>🍃</i><i>🍃</i>' : '') + '</div>';
   if(combat){
     const autres = (joueurs || []).filter(function(j){ return j.id !== moi.id; });
     html += coinBallsMC({ nom: moi.nom, pokes: equipe }, 'coin-bl');
@@ -2171,7 +2199,7 @@ function rendreScene(joueurs, resolutions){
     if(autres[1]) html += coinBallsMC({ nom: autres[1].nom, pokes: equipeDe(autres[1]).slice(0, 6) }, 'coin-tr');
     html += '<div class="scene-rangee">' + adversaires.map(function(nom){
       const src = spriteGen1(nom);
-      return '<div class="scene-poke' + (pop ? ' pop' : '') + '">' + (src ? '<img src="' + echapper(src) + '" alt="" onerror="this.onerror=null;this.src=\'missingno.png\'">' : '') + '<div class="scene-nom">' + echapper(nom) + (estChromaMC(nom) ? ' ✨' : '') + '</div></div>';
+      return '<div class="scene-poke' + (pop ? ' pop' : '') + '">' + (src ? '<img style="cursor:pointer" onclick="criPokeMC(' + (numeroDex(nom) || 0) + ',true)" src="' + echapper(src) + '" alt="" onerror="this.onerror=null;this.src=\'missingno.png\'">' : '') + '<div class="scene-nom">' + echapper(nom) + (estChromaMC(nom) ? ' ✨' : '') + '</div></div>';
     }).join('') + '</div><div class="scene-vs">⚔️</div>';
     const actif = equipe.find(function(pk){ const p = pvDeScene(pk); return !p.pvMax || p.pv > 0; });
     const autresPk = equipe.filter(function(pk){ return pk !== actif; });
