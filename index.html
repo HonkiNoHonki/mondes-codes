@@ -250,6 +250,14 @@
   #m-nom{font-family:'Press Start 2P',ui-monospace,monospace;font-size:16px;line-height:1.5}
   .carte h3{font-family:'Press Start 2P',ui-monospace,monospace;font-size:12px;line-height:1.7}
   .scene-terrain{position:relative;border-radius:14px;background-size:cover;background-position:center 32%;padding:12px 8px}
+.scene-terrain .teinte{position:absolute;inset:0;pointer-events:none;z-index:6;border-radius:14px;overflow:hidden;transition:background 1.2s ease}
+.scene-terrain .teinte.aube{background:linear-gradient(180deg,rgba(255,166,88,.20),rgba(255,120,130,.10) 60%,rgba(80,60,140,.10))}
+.scene-terrain .teinte.jour{background:transparent}
+.scene-terrain .teinte.crepuscule{background:linear-gradient(180deg,rgba(255,110,55,.24),rgba(150,60,130,.16) 55%,rgba(35,30,90,.20))}
+.scene-terrain .teinte.soir{background:linear-gradient(180deg,rgba(35,45,120,.30),rgba(12,14,55,.26))}
+.scene-terrain .teinte.nuit{background:linear-gradient(180deg,rgba(7,9,40,.46),rgba(3,5,26,.42))}
+.scene-terrain .teinte.pluie::after{content:'';position:absolute;inset:-40px;background:repeating-linear-gradient(105deg,transparent 0 9px,rgba(190,210,255,.20) 9px 10px,transparent 10px 19px);animation:teintePluie .55s linear infinite}
+@keyframes teintePluie{from{transform:translateY(-28px)}to{transform:translateY(28px)}}
   .coin{position:absolute;display:flex;flex-direction:column;gap:2px;z-index:3}
   .coin .cname{font-size:10px;color:#fff;text-shadow:0 1px 3px #000,0 0 6px rgba(0,0,0,.6);font-weight:700}
   .coin-bl{left:8px;bottom:8px}
@@ -2073,6 +2081,16 @@ function coinBallsMC(groupe, classe){
   return '<div class="coin ' + classe + '"><span class="cname">' + echapper(groupe.nom || '') + '</span><span class="cballs">' + balls + '</span></div>';
 }
 function pvDeScene(pk){ const pvMax = pk.pv_max!=null ? pk.pv_max : pk.pvMax; const pv = pk.pv!=null ? pk.pv : pvMax; return { pv: pv, pvMax: pvMax }; }
+function phaseJourMC(h){
+  const m=String(h||'').match(/(\d{1,2})[:h](\d{2})?/);
+  if(!m)return '';
+  const t=(+m[1])*60+(+(m[2]||0));
+  if(t>=1260||t<300)return 'nuit';
+  if(t<450)return 'aube';
+  if(t<1050)return 'jour';
+  if(t<1170)return 'crepuscule';
+  return 'soir';
+}
 function rendreScene(joueurs, resolutions){
   const zone = document.getElementById('m-scene'); if(!zone) return;
   const titre = document.getElementById('m-scene-titre');
@@ -2143,6 +2161,9 @@ function rendreScene(joueurs, resolutions){
   const lieu = (mondeCourant && mondeCourant.etat && mondeCourant.etat.lieu) || '';
   const plateau = combat ? plateauDepuisLieuMC(lieu) : null;
   let html = '<div class="scene-terrain"' + (plateau ? ' style="background-image:linear-gradient(rgba(14,10,38,.22),rgba(14,10,38,.36)),url(\'' + plateau + '\')"' : '') + '>';
+  const phMC = phaseJourMC(mondeCourant && mondeCourant.etat ? mondeCourant.etat.heure : '');
+  const pluieMC = !!(mondeCourant && mondeCourant.etat && /pluie|orage|averse/i.test(mondeCourant.etat.meteo || ''));
+  if(phMC || pluieMC) html += '<div class="teinte ' + phMC + (pluieMC ? ' pluie' : '') + '"></div>';
   if(combat){
     const autres = (joueurs || []).filter(function(j){ return j.id !== moi.id; });
     html += coinBallsMC({ nom: moi.nom, pokes: equipe }, 'coin-bl');
