@@ -1365,6 +1365,44 @@ window.MC_setEquipe = function(code, joueurId, equipe){
   localStorage.setItem('mc_equipes', JSON.stringify(toutes));
   if(mondeCourant && mondeCourant.code===code) rafraichirMonde(true);
 };
+const TYPES18MC=['Normal','Feu','Eau','Électrik','Plante','Glace','Combat','Poison','Sol','Vol','Psy','Insecte','Roche','Spectre','Dragon','Ténèbres','Acier','Fée'];
+function multAttDefMC(typeAtt,typesDef){ let m=1; (typesDef||[]).forEach(function(td){ const c=CHARTE_TYPES[typeAtt]; if(c && td in c) m*=c[td]; }); return m; }
+function analyseEquipeMC(membres){
+  const defs={}, offensif={};
+  TYPES18MC.forEach(function(ta){
+    let faible=0, resiste=0, immunise=0;
+    membres.forEach(function(pk){ const tps=TYPES_ESP[idDexPoke(pk)]; if(!tps) return; const m=multAttDefMC(ta,tps); if(m===0) immunise++; else if(m>1) faible++; else if(m<1) resiste++; });
+    defs[ta]={faible:faible, resiste:resiste, immunise:immunise};
+  });
+  TYPES18MC.forEach(function(td){ offensif[td]=0; });
+  membres.forEach(function(pk){ const tps=TYPES_ESP[idDexPoke(pk)]; if(!tps) return; tps.forEach(function(ta){ TYPES18MC.forEach(function(td){ if(multAttDefMC(ta,[td])>1) offensif[td]++; }); }); });
+  return {defs:defs, offensif:offensif};
+}
+function carteAnalyseMC(nom, membres){
+  const en = uiLang === 'en';
+  const connus = membres.filter(function(pk){ return TYPES_ESP[idDexPoke(pk)]; });
+  let html = '<h4 class="equipe-dresseur">🔍 ' + (en ? 'Team analysis' : 'Analyse d’équipe') + ' — ' + echapper(nom) + '</h4>';
+  if(!connus.length){ return html + '<p class="note">' + (en ? 'No known types in this team yet.' : 'Aucun type connu dans cette équipe pour l’instant.') + '</p>'; }
+  const a = analyseEquipeMC(connus);
+  html += '<p class="note" style="font-weight:700">' + (en ? '🛡️ Defense — by incoming attack type' : '🛡️ En défense — par type d’attaque reçue') + '</p>';
+  TYPES18MC.forEach(function(ta){ const d=a.defs[ta]; if(!d.faible && !d.resiste && !d.immunise) return;
+    const bits=[]; if(d.faible) bits.push('⚠️ '+d.faible+' '+(en?'weak':'faible'+(d.faible>1?'s':''))); if(d.resiste) bits.push('🛡️ '+d.resiste+' '+(en?'resistant':'résistant'+(d.resiste>1?'s':''))); if(d.immunise) bits.push('🚫 '+d.immunise+' '+(en?'immune':'immunisé'+(d.immunise>1?'s':'')));
+    html += '<p class="note">' + (d.faible>=2 ? '🔴 ' : d.faible===1 ? '🟠 ' : '🟢 ') + ta + ' : ' + bits.join(' · ') + '</p>'; });
+  const trous = TYPES18MC.filter(function(td){ return a.offensif[td]===0; });
+  const couverts = TYPES18MC.filter(function(td){ return a.offensif[td]>0; });
+  html += '<p class="note" style="font-weight:700">' + (en ? '⚔️ Offense — types covered by the team’s types' : '⚔️ En attaque — types couverts par les types de l’équipe') + ' : ' + couverts.length + ' / 18</p>';
+  html += '<p class="note">' + (couverts.length ? couverts.join(', ') : (en ? 'None.' : 'Aucun.')) + '</p>';
+  if(trous.length) html += '<p class="note">❌ ' + (en ? 'No super-effective coverage against: ' : 'Aucune couverture super-efficace contre : ') + trous.join(', ') + '.</p>';
+  const dangers = TYPES18MC.filter(function(ta){ return a.defs[ta].faible>=2 && a.defs[ta].immunise===0; });
+  const manques = [];
+  dangers.forEach(function(ta){ manques.push((en ? 'Several Pokémon are weak to ' : 'Plusieurs Pokémon faibles au type ') + ta + ' (' + a.defs[ta].faible + ')' + (a.defs[ta].resiste ? (en ? ' — but ' : ' — mais ') + a.defs[ta].resiste + (en ? ' resistant(s) make up for it' : ' résistant(s) pour compenser') : (en ? ' — and nobody resists it' : ' — et aucun résistant dans l’équipe')) + '.'); });
+  if(trous.length) manques.push((en ? 'No team type hits hard against: ' : 'Aucun type de l’équipe ne frappe fort contre : ') + trous.join(', ') + '.');
+  html += '<p class="note" style="font-weight:700">' + (en ? '🧭 What’s missing' : '🧭 Ce qu’il manque') + '</p>';
+  if(manques.length) manques.forEach(function(m){ html += '<p class="note">• ' + m + '</p>'; });
+  else html += '<p class="note">• ' + (en ? 'Nothing obvious: a well-balanced team, type-wise.' : 'Rien d’évident : équipe équilibrée sur les types.') + '</p>';
+  html += '<p class="note">' + (en ? 'Computed on the team above (official types, Gen IX chart). Offense only counts the Pokémon’s own types (STAB), not each move’s type.' : 'Analyse calculée sur l’équipe ci-dessus (types officiels, table Gén. IX). L’attaque ne compte que les types des Pokémon (STAB), pas le type de chaque attaque.') + '</p>';
+  return html;
+}
 function rendreEquipe(joueurs){
   const bloc = document.getElementById('m-equipe');
   if(!bloc) return;
@@ -1420,6 +1458,7 @@ function rendreEquipe(joueurs){
       }).join('') + '</div>';
     }
   });
+  ordonnes.forEach(function(j){ const eq6 = equipeDe(j).slice(0, 6); if(eq6.length) html += carteAnalyseMC(j.nom, eq6); });
   bloc.innerHTML = html;
 }
 
